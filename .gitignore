@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment Variables
+.env
+.env.local
+.env.*
+
+# Generated files and temporary scripts
+ZeroCommission_Postman_Collection.json
+check_php_params.cjs
+generate_postman.cjs
+php_params.json
+patch_routes.cjs
+
+# User uploads
+uploads/
+
+# OS/Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
