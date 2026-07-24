@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { LoanApplication } from '../../../models/LoanApplication.js';
 import { LoanApplicationDocuments } from '../../../models/LoanApplicationDocuments.js';
 import { uploadToCloudinary } from '../../../services/cloudinary/cloudinary_upload.js';
@@ -14,6 +15,7 @@ export async function uploadDocs(req, res) {
         if (!loan_application_id) {
             return res.json({ status: false, message: 'loan_application_id is required' });
         }
+        if (!mongoose.isValidObjectId(loan_application_id)) return res.json({ status: false, message: 'Invalid loan_application_id format' });
 
         const app = await LoanApplication.findById(loan_application_id).lean();
         if (!app) return res.json({ status: false, message: 'Application not found' });

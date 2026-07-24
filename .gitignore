@@ -13,6 +13,7 @@ check_php_params.cjs
 generate_postman.cjs
 php_params.json
 patch_routes.cjs
+inject_logo.cjs
 
 # User uploads
 uploads/

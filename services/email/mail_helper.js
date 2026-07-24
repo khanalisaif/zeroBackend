@@ -72,6 +72,17 @@ function getAuthSignature() {
 /**
  * Footer HTML block
  */
+
+/**
+ * Header HTML block
+ */
+function getHeader() {
+    const logo = process.env.EMAIL_SIGNATURE_LOGO || 'https://zerocommissionloan.com/email_signature_logo.png';
+    return `
+        
+    `;
+}
+
 function getFooter() {
     return `
         <tr>
@@ -95,6 +106,7 @@ function getTemplate(templateName, data) {
     const logo = process.env.EMAIL_SIGNATURE_LOGO || 'https://zerocommissionloan.com/email_signature_logo.png';
     const sig = getAuthSignature();
     const footer = getFooter();
+    const header = getHeader();
 
     const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
 
@@ -110,6 +122,7 @@ function getTemplate(templateName, data) {
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:0 40px;">
                         <h2 style="color:#1f2937;text-align:center;">Loan Application Verification</h2>
@@ -148,6 +161,7 @@ function getTemplate(templateName, data) {
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:40px;">
                         <h2 style="color:#1f2937;text-align:center;">Login Alert</h2>
@@ -179,6 +193,7 @@ function getTemplate(templateName, data) {
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:40px;">
                         <h2 style="color:#1f2937;text-align:center;">Logout Confirmation</h2>
@@ -210,6 +225,7 @@ function getTemplate(templateName, data) {
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:40px;">
                         <h2 style="color:#1f2937;text-align:center;">Logout Confirmation</h2>
@@ -242,6 +258,7 @@ function getTemplate(templateName, data) {
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:0 40px;">
                         <h2 style="color:#1f2937;text-align:center;">Loan Application Verification</h2>
@@ -280,6 +297,7 @@ function getTemplate(templateName, data) {
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:40px;">
                         <h2 style="color:#1f2937;text-align:center;">Login Alert</h2>
@@ -312,6 +330,7 @@ function getTemplate(templateName, data) {
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:0 40px;">
                         <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Customer,</p>
@@ -364,7 +383,8 @@ function getTemplate(templateName, data) {
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
-<tr><td style="padding:40px;">
+                ${header}
+                <tr><td style="padding:40px;">
 <h2 style="color:#1f2937;text-align:center;">Loan Application Status Update</h2>
 <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Customer,</p>
 <p style="font-size:16px;color:#4b5563;line-height:1.7;">We would like to inform you that your loan application is currently in the <strong style="color:#0057FF;">${status}</strong> stage.</p>
@@ -402,7 +422,8 @@ ${footer}
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
-<tr><td style="padding:40px;">
+                ${header}
+                <tr><td style="padding:40px;">
 <h2 style="color:#1f2937;text-align:center;">Document Verification Update</h2>
 <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Customer,</p>
 <p style="font-size:16px;color:#4b5563;line-height:1.7;">We would like to inform you that the documents submitted for your loan application have been <strong style="color:#0057FF;">${documentStatus}</strong>.</p>
@@ -433,6 +454,7 @@ ${footer}
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:40px;">
                         <h2 style="color:#dc2626;text-align:center;">Loan Application Closed</h2>
@@ -466,6 +488,7 @@ ${footer}
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:40px;">
                         <h2 style="color:#1f2937;text-align:center;">Loan Application Under Review</h2>
@@ -501,6 +524,7 @@ ${footer}
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:0 40px;">
                         <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Customer,</p>
@@ -562,11 +586,8 @@ ${footer}
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
-                <tr>
-                    <td align="center" style="padding:40px 40px 20px;">
-                        <img src="${logo}" alt="Zero Commission" style="width:180px;height:auto;">
-                    </td>
-                </tr>
+                ${header}
+                
                 <tr>
                     <td style="padding:0 40px;">
                         <h1 style="margin:0;color:#0057FF;text-align:center;font-size:30px;">Welcome to Zero Commission 🎉</h1>
@@ -614,6 +635,7 @@ ${footer}
     <tr>
         <td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
                 <tr>
                     <td style="padding:40px;">
                         <h2 style="color:#1f2937;text-align:center;">Password Changed</h2>

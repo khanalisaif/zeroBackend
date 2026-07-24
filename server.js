@@ -21,6 +21,10 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// Base route
+app.get('/', (req, res) => {
+    res.send('Welcome to zerocommission backend');
+});
 
 // Admin routes
 app.use('/admin/auth', adminAuthRouter);
