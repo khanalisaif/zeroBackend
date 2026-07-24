@@ -1,11 +1,16 @@
 // mail_helper.js — equivalent of mail_helper.php
 // Central function for sending templated emails
 
+import fs from 'fs';
 import { MailManager } from './MailManager.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const logoPath = path.join(__dirname, 'assets', 'logo.png');
+const logoBase64 = fs.existsSync(logoPath) ? fs.readFileSync(logoPath, 'base64') : '';
+const logo = logoBase64 ? `data:image/png;base64,${logoBase64}` : (process.env.EMAIL_SIGNATURE_LOGO || 'https://zerocommissionloan.com/email_signature_logo.png');
 
 /**
  * Email asset URL helper
@@ -19,7 +24,7 @@ export function emailAsset(file) {
  * Auth signature HTML block
  */
 function getAuthSignature() {
-    const logo = process.env.EMAIL_SIGNATURE_LOGO || 'https://zerocommissionloan.com/email_signature_logo.png';
+    
     return `
         <tr>
             <td style="padding:20px 40px 15px 40px;">
@@ -77,7 +82,7 @@ function getAuthSignature() {
  * Header HTML block
  */
 function getHeader() {
-    const logo = process.env.EMAIL_SIGNATURE_LOGO || 'https://zerocommissionloan.com/email_signature_logo.png';
+    
     return `
         
     `;
@@ -103,7 +108,7 @@ function getFooter() {
  * Email templates registry — equivalent of PHP template files
  */
 function getTemplate(templateName, data) {
-    const logo = process.env.EMAIL_SIGNATURE_LOGO || 'https://zerocommissionloan.com/email_signature_logo.png';
+    
     const sig = getAuthSignature();
     const footer = getFooter();
     const header = getHeader();
