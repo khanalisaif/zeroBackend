@@ -656,6 +656,333 @@ ${footer}
             };
         }
 
+        case 'consultation_ticket_created': {
+            const ticketId = data.ticket_id || 'N/A';
+            const name = data.name || data.customer_name || 'Valued Customer';
+            return {
+                subject: `Your Consultation Request (#${ticketId}) Received — Zero Commission`,
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+                ${header}
+                <tr>
+                    <td style="padding:0 40px;">
+                        <h2 style="color:#1f2937;text-align:center;font-size:22px;margin-bottom:10px;">Consultation Request Received</h2>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">Dear <strong>${name}</strong>,</p>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">Thank you for reaching out to <strong>Zero Commission</strong>. We have received your consultation request and assigned it a unique tracking number:</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding:20px;">
+                        <div style="background:#f0f7ff;border:1px solid #cce3ff;color:#0057FF;display:inline-block;padding:14px 32px;border-radius:12px;font-size:24px;font-weight:bold;letter-spacing:1px;">#${ticketId}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0 40px 25px 40px;">
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">Our financial advisory team is reviewing your request and will get back to you within 24 business hours.</p>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">You will receive an automated email notification as soon as an update is posted on your ticket.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
+        case 'consultation_update': {
+            const ticketId = data.ticket_id || 'N/A';
+            const status = data.status || 'Updated';
+            const remarks = data.remarks || 'Our advisory team has reviewed and updated your consultation ticket.';
+            const name = data.name || data.customer_name || 'Valued Customer';
+
+            let statusColor = '#0057FF'; // default blue
+            let statusBg = '#eef5ff';
+            if (status === 'Resolved' || status === 'Closed') {
+                statusColor = '#10B981'; // green
+                statusBg = '#ecfdf5';
+            } else if (status === 'Pending') {
+                statusColor = '#8B5CF6'; // purple
+                statusBg = '#f5f3ff';
+            } else if (status === 'Open' || status === 'In Progress') {
+                statusColor = '#F59E0B'; // amber
+                statusBg = '#fffbeb';
+            }
+
+            return {
+                subject: `Update on Your Consultation Request (#${ticketId}) — Zero Commission`,
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+                ${header}
+                <tr>
+                    <td style="padding:0 40px;">
+                        <h2 style="color:#1f2937;text-align:center;font-size:22px;margin-bottom:10px;">Consultation Ticket Updated</h2>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">Dear <strong>${name}</strong>,</p>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">There is a new update regarding your consultation ticket <strong>#${ticketId}</strong>.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:15px 40px;">
+                        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="font-size:14px;color:#6b7280;padding-bottom:10px;">Ticket ID:</td>
+                                    <td align="right" style="font-size:15px;font-weight:bold;color:#1f2937;padding-bottom:10px;">#${ticketId}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:14px;color:#6b7280;padding-bottom:15px;">Current Status:</td>
+                                    <td align="right" style="padding-bottom:15px;">
+                                        <span style="background:${statusBg};color:${statusColor};font-size:13px;font-weight:bold;padding:6px 14px;border-radius:20px;display:inline-block;">${status}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border-top:1px dashed #d1d5db;padding-top:15px;">
+                                        <div style="font-size:13px;font-weight:bold;color:#4b5563;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Admin Response / Remarks:</div>
+                                        <div style="font-size:15px;color:#1f2937;line-height:1.6;background:#ffffff;border:1px solid #e5e7eb;padding:12px 15px;border-radius:8px;">${remarks}</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 40px 25px 40px;">
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">If you have any further questions or require additional assistance, simply reply to this email or contact our support team.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
+        case 'admin_consultation_alert': {
+            const ticketId = data.ticket_id || 'N/A';
+            const name = data.name || data.customer_name || 'Anonymous';
+            const phone = data.phone || data.phone_number || 'N/A';
+            const email = data.email || 'N/A';
+            const subject = data.subject || 'Consultation Request';
+            const issue = data.issue || 'N/A';
+            return {
+                subject: `[New Ticket #${ticketId}] Consultation Request from ${name}`,
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+                ${header}
+                <tr>
+                    <td style="padding:0 40px;">
+                        <h2 style="color:#1f2937;text-align:center;font-size:22px;margin-bottom:10px;">New Consultation Request</h2>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">A new consultation ticket has been submitted on <strong>Zero Commission</strong>.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:15px 40px;">
+                        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="font-size:14px;color:#6b7280;padding-bottom:10px;">Ticket ID:</td>
+                                    <td align="right" style="font-size:15px;font-weight:bold;color:#0057FF;padding-bottom:10px;">#${ticketId}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:14px;color:#6b7280;padding-bottom:10px;">Customer Name:</td>
+                                    <td align="right" style="font-size:15px;font-weight:bold;color:#1f2937;padding-bottom:10px;">${name}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:14px;color:#6b7280;padding-bottom:10px;">Phone Number:</td>
+                                    <td align="right" style="font-size:15px;font-weight:bold;color:#1f2937;padding-bottom:10px;">${phone}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:14px;color:#6b7280;padding-bottom:10px;">Email Address:</td>
+                                    <td align="right" style="font-size:15px;font-weight:bold;color:#1f2937;padding-bottom:10px;">${email}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size:14px;color:#6b7280;padding-bottom:15px;">Subject:</td>
+                                    <td align="right" style="font-size:15px;font-weight:bold;color:#1f2937;padding-bottom:15px;">${subject}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border-top:1px dashed #d1d5db;padding-top:15px;">
+                                        <div style="font-size:13px;font-weight:bold;color:#4b5563;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Issue Description:</div>
+                                        <div style="font-size:15px;color:#1f2937;line-height:1.6;background:#ffffff;border:1px solid #e5e7eb;padding:12px 15px;border-radius:8px;">${issue}</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:10px 40px 25px 40px;">
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">Please log in to the Admin Panel to review and respond to this ticket.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
+        case 'contact_update': {
+            const status = data.status || 'Updated';
+            const remarks = data.remarks || 'No additional remarks provided.';
+            const name = data.name || 'Applicant';
+            return {
+                subject: `Update on Your Contact Request — Zero Commission`,
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
+                <tr>
+                    <td style="padding:40px 40px 10px 40px;">
+                        <h2 style="margin:0 0 15px 0;font-size:22px;color:#1e293b;">Dear ${name},</h2>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">There has been an update regarding your contact inquiry.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:15px 40px;">
+                        <table width="100%" cellpadding="16" cellspacing="0" style="background:#f8fafc;border-left:4px solid #0197E0;border-radius:8px;">
+                            <tr>
+                                <td style="font-size:14px;color:#334155;">
+                                    <p style="margin:0 0 8px 0;"><strong>Status:</strong> <span style="color:#0197E0;font-weight:bold;">${status}</span></p>
+                                    <p style="margin:0;"><strong>Admin Reply / Remarks:</strong><br/>${remarks}</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:15px 40px 30px 40px;">
+                        <p style="font-size:14px;color:#64748b;margin:0;">If you have further questions, feel free to reply to this email or submit a new inquiry on our website.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
+        case 'contact_request_received': {
+            const name = data.name || data.full_name || 'Applicant';
+            const subjectText = data.subject || 'General Inquiry';
+            return {
+                subject: `We Received Your Contact Inquiry — Zero Commission`,
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
+                <tr>
+                    <td style="padding:40px 40px 10px 40px;">
+                        <h2 style="margin:0 0 15px 0;font-size:22px;color:#1e293b;">Dear ${name},</h2>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">Thank you for contacting <strong>Zero Commission</strong>. We have received your inquiry regarding "<strong>${subjectText}</strong>" and our support team is reviewing it.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:15px 40px;">
+                        <table width="100%" cellpadding="16" cellspacing="0" style="background:#f8fafc;border-left:4px solid #0197E0;border-radius:8px;">
+                            <tr>
+                                <td style="font-size:14px;color:#334155;">
+                                    <p style="margin:0 0 8px 0;"><strong>What's Next?</strong></p>
+                                    <p style="margin:0;">Our executive will check your message and reply or contact you shortly. You will receive an email update as soon as your request status changes.</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:15px 40px 30px 40px;">
+                        <p style="font-size:14px;color:#64748b;margin:0;">We appreciate your patience and look forward to assisting you.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
+        case 'admin_contact_alert': {
+            const name = data.name || data.full_name || 'Anonymous';
+            const phone = data.phone || data.mobile || 'N/A';
+            const email = data.email || 'N/A';
+            const subjectText = data.subject || 'General Inquiry';
+            const message = data.message || 'No additional message provided.';
+            return {
+                subject: `[New Contact Inquiry] ${subjectText} — from ${name}`,
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
+                <tr>
+                    <td style="padding:40px 40px 10px 40px;">
+                        <h2 style="margin:0 0 15px 0;font-size:22px;color:#1e293b;">New Contact Inquiry Received</h2>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">A new message has been submitted via the website Contact form.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:15px 40px;">
+                        <table width="100%" cellpadding="16" cellspacing="0" style="background:#f8fafc;border-left:4px solid #0197E0;border-radius:8px;">
+                            <tr>
+                                <td style="font-size:14px;color:#334155;line-height:1.7;">
+                                    <p style="margin:0 0 6px 0;"><strong>Name:</strong> ${name}</p>
+                                    <p style="margin:0 0 6px 0;"><strong>Mobile:</strong> ${phone}</p>
+                                    <p style="margin:0 0 6px 0;"><strong>Email:</strong> ${email}</p>
+                                    <p style="margin:0 0 6px 0;"><strong>Subject:</strong> ${subjectText}</p>
+                                    <p style="margin:8px 0 0 0;padding-top:8px;border-top:1px solid #e2e8f0;"><strong>Message:</strong><br/>${message}</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:15px 40px 30px 40px;">
+                        <p style="font-size:14px;color:#64748b;margin:0;">Log in to the Admin Panel Contact Inquiries page to review and respond.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
         default:
             return null;
     }

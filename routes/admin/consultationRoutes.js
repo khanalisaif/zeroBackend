@@ -6,6 +6,7 @@ import { getDashboard } from '../../controllers/admin/feature/consultation/dashb
 import { getTicketList } from '../../controllers/admin/feature/consultation/ticket_list.js';
 import { updateConsultation } from '../../controllers/admin/feature/consultation/update_consultation.js';
 import { getConsultationDetails } from '../../controllers/admin/feature/consultation/consultation_details.js';
+import { deleteConsultation } from '../../controllers/admin/feature/consultation/delete_consultation.js';
 
 const router = express.Router();
 
@@ -15,5 +16,6 @@ router.get('/dashboard', getDashboard);
 router.get('/ticket_list', getTicketList);
 router.post('/update_consultation', updateConsultation);
 router.get('/consultation_details', getConsultationDetails);
+router.post('/delete_consultation', deleteConsultation);
 
 export default router;

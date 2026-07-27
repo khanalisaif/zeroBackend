@@ -21,11 +21,14 @@ export async function updateConsultation(req, res) {
         const cons = await Consultation.findOne(query).lean();
         if (!cons) return res.json({ status: false, message: 'Not found' });
 
+        const silent = req.body.silent === true || req.body.silent === 'true' || req.query.silent === 'true';
         const updates = { status, remarks };
         if (priority) updates.priority = priority;
 
         await Consultation.updateOne({ _id: cons._id }, updates);
-        sendTemplateMail(cons.email, 'consultation_update', { ticket_id: cons.ticket_id, status, remarks }).catch(() => {});
+        if (!silent) {
+            sendTemplateMail(cons.email, 'consultation_update', { ticket_id: cons.ticket_id, status, remarks, name: cons.customer_name }).catch(() => {});
+        }
         
         return res.json({ status: true, message: 'Ticket updated' });
     } catch (err) {

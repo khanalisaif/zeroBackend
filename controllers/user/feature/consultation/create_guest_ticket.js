@@ -9,8 +9,17 @@ export async function createGuestTicket(req, res) {
         const ticket_id = prefix + (count + 1).toString().padStart(4, '0');
         await Consultation.create({ ticket_id, customer_name, phone_number, email, subject, issue });
         if (email) {
-            sendTemplateMail(email, 'consultation_ticket_created', { ticket_id }).catch(() => {});
+            sendTemplateMail(email, 'consultation_ticket_created', { ticket_id, name: customer_name }).catch(() => {});
         }
+        const adminEmail = process.env.ADMIN_EMAIL || process.env.GRAPH_SENDER_EMAIL || 'zerocommission@digivahan.in';
+        sendTemplateMail(adminEmail, 'admin_consultation_alert', {
+            ticket_id,
+            name: customer_name,
+            phone: phone_number,
+            email: email || 'N/A',
+            subject,
+            issue
+        }).catch(() => {});
         return res.json({ status: true, message: 'Ticket created', ticket_id });
     } catch (err) {
         return res.status(500).json({ status: false, message: 'Server error', error: err.message });

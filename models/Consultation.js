@@ -9,7 +9,7 @@ const consultationSchema = new mongoose.Schema({
     subject: { type: String, required: true },
     issue: { type: String, required: true },
     priority: { type: String, default: 'Normal' },
-    status: { type: String, default: 'Open' },
+    status: { type: String, default: 'Pending' },
     remarks: { type: String, default: null }
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
