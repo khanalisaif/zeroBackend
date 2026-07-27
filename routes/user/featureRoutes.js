@@ -33,7 +33,8 @@ const multiUpload = upload.fields([
     { name: 'employment_letter', maxCount: 1 },
     { name: 'business_registration', maxCount: 1 },
     { name: 'gst_returns', maxCount: 1 },
-    { name: 'moa', maxCount: 1 }
+    { name: 'moa', maxCount: 1 },
+    { name: 'otherdocs', maxCount: 5 }
 ]);
 
 router.post('/apply_loan', applyLoan);

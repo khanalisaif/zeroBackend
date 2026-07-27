@@ -31,7 +31,7 @@ export async function requestTrackApplication(req, res) {
 
         const activeOtp = await Otp.findOne({ email, expires_at: { $gt: new Date() } }).lean();
         if (activeOtp) {
-            return res.json({ status: false, message: 'OTP is already sent', email: maskEmail(email) });
+            return res.json({ status: false, message: 'OTP is already sent', email: maskEmail(email), actual_email: email });
         }
 
         await Otp.deleteMany({ email });
@@ -43,7 +43,7 @@ export async function requestTrackApplication(req, res) {
 
         const mailRes = await sendTemplateMail(email, 'user_login_otp', { email, otp });
         if (mailRes && mailRes.status) {
-            return res.json({ status: true, message: 'OTP sent successfully', email: maskEmail(email) });
+            return res.json({ status: true, message: 'OTP sent successfully', email: maskEmail(email), actual_email: email });
         } else {
             return res.json({ status: false, message: 'Failed to send OTP email' });
         }

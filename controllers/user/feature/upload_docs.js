@@ -33,7 +33,8 @@ export async function uploadDocs(req, res) {
             employment_letter:     'employment_letter_url',
             business_registration: 'business_registration_url',
             gst_returns:           'gst_returns_url',
-            moa:                   'moa_url'
+            moa:                   'moa_url',
+            otherdocs:             'otherdocs_url'
         };
 
         const updates = {};

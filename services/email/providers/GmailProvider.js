@@ -66,14 +66,43 @@ export class GmailProvider {
      */
     async send(toEmail, subject, htmlContent) {
         try {
-            const rawMessage = [
-                'MIME-Version: 1.0',
-                'Content-Type: text/html; charset=UTF-8',
-                `To: ${toEmail}`,
-                `Subject: ${subject}`,
-                '',
-                htmlContent
-            ].join('\r\n');
+            const logoPath = path.join(process.cwd(), 'services', 'email', 'assets', 'logo.png');
+            let rawMessage = '';
+
+            if (fs.existsSync(logoPath)) {
+                const logoBase64 = fs.readFileSync(logoPath, 'base64');
+                const boundary = '====_Boundary_' + Date.now() + '_====';
+                rawMessage = [
+                    'MIME-Version: 1.0',
+                    `To: ${toEmail}`,
+                    `Subject: ${subject}`,
+                    `Content-Type: multipart/related; boundary="${boundary}"`,
+                    '',
+                    `--${boundary}`,
+                    'Content-Type: text/html; charset=UTF-8',
+                    'Content-Transfer-Encoding: 8bit',
+                    '',
+                    htmlContent,
+                    '',
+                    `--${boundary}`,
+                    'Content-Type: image/png; name="logo.png"',
+                    'Content-Transfer-Encoding: base64',
+                    'Content-ID: <companylogo>',
+                    'Content-Disposition: inline; filename="logo.png"',
+                    '',
+                    logoBase64,
+                    `--${boundary}--`
+                ].join('\r\n');
+            } else {
+                rawMessage = [
+                    'MIME-Version: 1.0',
+                    'Content-Type: text/html; charset=UTF-8',
+                    `To: ${toEmail}`,
+                    `Subject: ${subject}`,
+                    '',
+                    htmlContent
+                ].join('\r\n');
+            }
 
             const encoded = Buffer.from(rawMessage)
                 .toString('base64')

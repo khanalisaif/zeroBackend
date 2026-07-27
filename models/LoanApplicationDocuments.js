@@ -10,6 +10,7 @@ const loanApplicationDocumentsSchema = new mongoose.Schema({
     business_registration_url: { type: String, default: null },
     gst_returns_url: { type: String, default: null },
     moa_url: { type: String, default: null },
+    otherdocs_url: { type: String, default: null },
     document_status: { type: String, default: 'Pending' },
     remarks: { type: String, default: null },
     uploaded_at: { type: Date, default: Date.now }

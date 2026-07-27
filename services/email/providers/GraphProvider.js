@@ -2,7 +2,14 @@
 // Sends email via Microsoft Graph API using client credentials
 
 import fetch from 'node-fetch';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import 'dotenv/config';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logoPath = path.join(__dirname, '..', 'assets', 'logo.png');
 
 export class GraphProvider {
     constructor() {
@@ -60,6 +67,21 @@ export class GraphProvider {
             };
         }
 
+        const attachments = [];
+        if (fs.existsSync(logoPath)) {
+            try {
+                const logoBase64 = fs.readFileSync(logoPath, 'base64');
+                attachments.push({
+                    '@odata.type': '#microsoft.graph.fileAttachment',
+                    name: 'logo.png',
+                    contentType: 'image/png',
+                    contentBytes: logoBase64,
+                    isInline: true,
+                    contentId: 'companylogo'
+                });
+            } catch (_) {}
+        }
+
         const mailData = {
             message: {
                 subject,
@@ -77,6 +99,10 @@ export class GraphProvider {
             },
             saveToSentItems: true
         };
+
+        if (attachments.length > 0) {
+            mailData.message.attachments = attachments;
+        }
 
         const url = `https://graph.microsoft.com/v1.0/users/${this.config.sender_email}/sendMail`;
 

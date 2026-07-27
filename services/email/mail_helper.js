@@ -9,8 +9,8 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const logoPath = path.join(__dirname, 'assets', 'logo.png');
-const logoBase64 = fs.existsSync(logoPath) ? fs.readFileSync(logoPath, 'base64') : '';
-const logo = logoBase64 ? `data:image/png;base64,${logoBase64}` : (process.env.EMAIL_SIGNATURE_LOGO || 'https://zerocommissionloan.com/email_signature_logo.png');
+// Use cid:companylogo so mail clients render the inline attached logo natively without blocking base64
+const logo = 'cid:companylogo';
 
 /**
  * Email asset URL helper
@@ -75,17 +75,10 @@ function getAuthSignature() {
 }
 
 /**
- * Footer HTML block
- */
-
-/**
  * Header HTML block
  */
 function getHeader() {
-    
-    return `
-        
-    `;
+    return ``;
 }
 
 function getFooter() {

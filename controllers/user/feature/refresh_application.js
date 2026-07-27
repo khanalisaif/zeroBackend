@@ -60,7 +60,8 @@ export async function refreshApplication(req, res) {
                 'Employment Letter': 'employment_letter_url',
                 'Business Registration': 'business_registration_url',
                 'GST Returns': 'gst_returns_url',
-                'MOA': 'moa_url'
+                'MOA': 'moa_url',
+                'Other Documents': 'otherdocs_url'
             };
 
             for (const [documentName, columnName] of Object.entries(documentMap)) {

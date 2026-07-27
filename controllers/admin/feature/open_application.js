@@ -9,6 +9,8 @@ export async function openApplication(req, res) {
         const app = await LoanApplication.findById(id).lean();
         if (!app) return res.json({ status: false, message: 'Application not found' });
 
+        await LoanApplication.updateOne({ _id: id }, { is_viewed: true, viewed_at: new Date() });
+
         return res.json({ status: true, data: app });
     } catch (err) {
         return res.status(500).json({ status: false, message: 'Server error', error: err.message });

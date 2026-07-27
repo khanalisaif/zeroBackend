@@ -6,7 +6,6 @@ import { createContact } from '../../controllers/user/feature/contact/contact.js
 
 const router = express.Router();
 
-router.use(userAuth);
 router.post('/submit', createContact);
 
 export default router;
