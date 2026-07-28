@@ -50,8 +50,9 @@ export async function verifyLoginOtp(req, res) {
             message: 'Login successful',
             data: {
                 id: user._id,
-                name: user.name,
+                name: user.name || '',
                 email: user.email,
+                number: user.number || '',
                 access_token: accessToken,
                 refresh_token: refreshToken,
                 access_token_expires_at: accessExpiry.toISOString(),

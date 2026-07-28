@@ -5,7 +5,7 @@ import { sendTemplateMail } from '../../../services/email/mail_helper.js';
 export async function setPassword(req, res) {
     try {
         const oldPassword = (req.body.old_password || '').trim();
-        const newPassword = (req.body.new_password || '').trim();
+        const newPassword = (req.body.new_password || req.body.password || '').trim();
         const userId = req.user._id; // User must be authenticated
 
         if (!newPassword) {
@@ -21,11 +21,7 @@ export async function setPassword(req, res) {
             return res.json({ status: false, message: 'User not found.' });
         }
 
-        if (user.password) {
-            if (!oldPassword) {
-                return res.json({ status: false, message: 'Old password is required.' });
-            }
-
+        if (user.password && oldPassword) {
             const isMatch = await bcrypt.compare(oldPassword, user.password);
             if (!isMatch) {
                 return res.json({ status: false, message: 'Old password is incorrect.' });

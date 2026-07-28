@@ -10,6 +10,7 @@ import { verifyLoginOtp } from '../../controllers/user/auth/verify_login_otp.js'
 import { setPassword } from '../../controllers/user/auth/set_password.js';
 import { userLogout } from '../../controllers/user/auth/user_logout.js';
 import { userRefreshToken } from '../../controllers/user/auth/user_refresh_token.js';
+import { updateProfile } from '../../controllers/user/auth/update_profile.js';
 import { userAuth } from '../../middlewares/userAuth.js';
 
 const router = express.Router();
@@ -24,6 +25,7 @@ router.post('/refresh_token', userRefreshToken);
 
 // Protected routes
 router.post('/set_password', userAuth, setPassword);
+router.post('/update_profile', userAuth, updateProfile);
 router.post('/logout', userAuth, userLogout);
 
 export default router;

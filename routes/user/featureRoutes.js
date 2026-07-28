@@ -9,6 +9,8 @@ import { requestTrackApplication } from '../../controllers/user/feature/request_
 import { trackApplication } from '../../controllers/user/feature/track_application.js';
 import { uploadDocs } from '../../controllers/user/feature/upload_docs.js';
 import { verifyOtp } from '../../controllers/user/feature/verify_otp.js';
+import { getMyApplications } from '../../controllers/user/feature/get_my_applications.js';
+import { getMyConsultations } from '../../controllers/user/feature/get_my_consultations.js';
 import { userAuth } from '../../middlewares/userAuth.js';
 import fs from 'fs';
 
@@ -46,6 +48,8 @@ router.post('/verify_otp', verifyOtp);
 
 // Protected routes (as per original logic, upload_docs had user_auth)
 router.post('/upload_docs', userAuth, multiUpload, uploadDocs);
+router.get('/get_my_applications', userAuth, getMyApplications);
+router.get('/get_my_consultations', userAuth, getMyConsultations);
 
 // Sub-features
 router.use('/faq', faqRoutes);

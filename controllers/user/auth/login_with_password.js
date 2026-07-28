@@ -18,7 +18,7 @@ export async function loginWithPassword(req, res) {
         }).lean();
 
         if (!user) {
-            return res.json({ status: false, message: 'Invalid credentials.' });
+            return res.json({ status: false, message: 'Account not found with this email or mobile number.' });
         }
 
         // Check account status
@@ -33,7 +33,7 @@ export async function loginWithPassword(req, res) {
 
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return res.json({ status: false, message: 'Invalid credentials.' });
+            return res.json({ status: false, message: 'Wrong password. Please try again.' });
         }
 
         const accessToken = crypto.randomBytes(32).toString('hex');
