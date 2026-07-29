@@ -7,6 +7,7 @@ import { verifyLoginOtp } from '../../controllers/admin/auth/verify_login_otp.js
 import { adminLogout } from '../../controllers/admin/auth/admin_logout.js';
 import { adminRefreshToken } from '../../controllers/admin/auth/admin_refresh_token.js';
 import { createAdmin } from '../../controllers/admin/auth/create_admin.js';
+import { getAdminProfile } from '../../controllers/admin/auth/get_profile.js';
 import { adminAuth } from '../../middlewares/adminAuth.js';
 
 const router = express.Router();
@@ -17,5 +18,7 @@ router.post('/verify_login_otp', verifyLoginOtp);
 router.post('/logout', adminAuth, adminLogout);
 router.post('/refresh_token', adminRefreshToken);
 router.post('/create_admin', createAdmin);
+router.get('/profile', adminAuth, getAdminProfile);
 
 export default router;
+

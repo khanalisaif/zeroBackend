@@ -10,6 +10,8 @@ export async function sendLoginOtp(req, res) {
         
         await createUser(mobile, email);
 
+        await Otp.deleteMany({ email });
+
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 5 * 60000);
 

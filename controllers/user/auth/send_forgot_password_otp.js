@@ -22,11 +22,6 @@ export async function sendForgotPasswordOtp(req, res) {
             return res.json({ status: false, message: 'User not found.' });
         }
 
-        const activeOtp = await Otp.findOne({ email, expires_at: { $gt: new Date() } }).lean();
-        if (activeOtp) {
-            return res.json({ status: false, message: `OTP already sent. Please wait. On ${maskEmail(email)}` });
-        }
-
         await Otp.deleteMany({ email });
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -38,7 +33,7 @@ export async function sendForgotPasswordOtp(req, res) {
             expires_at: expiresAt
         });
 
-        const mailRes = await sendTemplateMail(email, 'user_login_otp', { name: user.name || 'Customer', email, otp });
+        const mailRes = await sendTemplateMail(email, 'forgot_password_otp', { name: user.name || 'Customer', email, otp });
         if (mailRes && mailRes.status) {
             return res.json({ status: true, message: `OTP sent successfully on ${maskEmail(email)}` });
         } else {

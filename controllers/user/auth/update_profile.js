@@ -5,12 +5,20 @@ export async function updateProfile(req, res) {
         const user = req.user;
         if (!user) return res.status(401).json({ status: false, message: 'Unauthorized' });
 
-        const name = (req.body.name || '').trim();
-        const number = (req.body.number || '').trim();
+        const first_name = (req.body.first_name || '').trim();
+        const last_name = (req.body.last_name || '').trim();
 
-        const updates = {};
-        if (name) updates.name = name;
-        if (number) updates.number = number;
+        if (!first_name) {
+            return res.status(400).json({ status: false, message: 'First name is required.' });
+        }
+
+        const fullName = [first_name, last_name].filter(Boolean).join(' ');
+
+        const updates = {
+            first_name,
+            last_name,
+            name: fullName
+        };
 
         await User.updateOne({ _id: user._id }, { $set: updates });
         const updatedUser = await User.findById(user._id).lean();
@@ -20,9 +28,12 @@ export async function updateProfile(req, res) {
             message: 'Profile updated successfully',
             data: {
                 id: updatedUser._id,
+                first_name: updatedUser.first_name || '',
+                last_name: updatedUser.last_name || '',
                 name: updatedUser.name || '',
                 email: updatedUser.email || '',
                 number: updatedUser.number || '',
+                pan_number: updatedUser.pan_number || '',
                 profile_pic: updatedUser.profile_pic || ''
             }
         });
@@ -30,3 +41,4 @@ export async function updateProfile(req, res) {
         return res.status(500).json({ status: false, message: 'Server error', error: err.message });
     }
 }
+

@@ -1,9 +1,12 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-    name: { type: String, trim: true },
+    first_name: { type: String, trim: true, default: '' },
+    last_name: { type: String, trim: true, default: '' },
+    name: { type: String, trim: true }, // kept for backward compat; auto-set from first_name + last_name
     email: { type: String, unique: true, sparse: true, trim: true },
     number: { type: String, unique: true, sparse: true, trim: true },
+    pan_number: { type: String, trim: true, default: null },
     password: { type: String, default: null },
     account_status: { type: String, default: 'active' },
     profile_pic: { type: String, default: null },

@@ -51,6 +51,7 @@ export async function verifyLoginOtp(req, res) {
                 id: admin._id,
                 name: admin.name,
                 email: admin.email,
+                permissions: admin.permissions || [],
                 access_token: accessToken,
                 refresh_token: refreshToken,
                 access_token_expires_at: accessExpiry.toISOString(),

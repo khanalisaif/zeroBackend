@@ -1,9 +1,13 @@
 import { User } from './User.js';
 import bcrypt from 'bcrypt';
 
-export async function createUser(mobile, email, name, password) {
+export async function createUser(mobile, email, first_name, last_name, pan_number, password) {
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanMobile = (mobile || '').trim();
+    const cleanFirstName = (first_name || '').trim();
+    const cleanLastName = (last_name || '').trim();
+    const cleanPan = (pan_number || '').trim().toUpperCase();
+    const fullName = [cleanFirstName, cleanLastName].filter(Boolean).join(' ');
 
     if (cleanEmail) {
         const existingEmail = await User.findOne({ 
@@ -37,7 +41,15 @@ export async function createUser(mobile, email, name, password) {
         hashedPassword = await bcrypt.hash(password, salt);
     }
 
-    const newUser = await User.create({ number: cleanMobile, email: cleanEmail, name, password: hashedPassword });
+    const newUser = await User.create({
+        number: cleanMobile,
+        email: cleanEmail,
+        first_name: cleanFirstName,
+        last_name: cleanLastName,
+        name: fullName,
+        pan_number: cleanPan || null,
+        password: hashedPassword
+    });
     return {
         status: true,
         is_new_user: true,

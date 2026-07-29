@@ -20,6 +20,7 @@ import { exportApplication } from '../../controllers/admin/feature/export_applic
 // Consultation and Contact
 import consultationRouter from './consultationRoutes.js';
 import contactRouter from './contactRoutes.js';
+import userManagementRouter from './userManagementRoutes.js';
 
 const router = express.Router();
 
@@ -31,6 +32,9 @@ router.use('/consultation', consultationRouter);
 
 // Contact
 router.use('/contact', contactRouter);
+
+// Users Management
+router.use('/users', userManagementRouter);
 
 // Loan Applications
 router.post('/get_loan_applications', adminAuth, getLoanApplications);

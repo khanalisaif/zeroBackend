@@ -110,10 +110,10 @@ function getTemplate(templateName, data) {
 
     switch (templateName) {
 
-        case 'admin_login_otp': {
+        case 'master_admin_login_otp': {
             const otp = data.otp || '';
             return {
-                subject: 'OTP for admin login.',
+                subject: 'Master Admin Portal Verification — Zero Commission',
                 body: `
 <div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
@@ -123,9 +123,49 @@ function getTemplate(templateName, data) {
                 ${header}
                 <tr>
                     <td style="padding:0 40px;">
-                        <h2 style="color:#1f2937;text-align:center;">Loan Application Verification</h2>
-                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Admin,</p>
-                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">To securely access your panel, please use the verification code below:</p>
+                        <h2 style="color:#1f2937;text-align:center;">Master Admin Portal Verification</h2>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Master Admin,</p>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">To securely authenticate into the Master Admin Portal, please use the verification code below:</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding:25px;">
+                        <div style="background:#0057FF;color:#ffffff;display:inline-block;padding:18px 40px;border-radius:10px;font-size:34px;font-weight:bold;letter-spacing:8px;">${otp}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0 40px;">
+                        <p style="font-size:15px;color:#4b5563;">This OTP is valid for <strong>5 minutes</strong>.</p>
+                        <p style="font-size:15px;color:#4b5563;">Never share this OTP with anyone.</p>
+                        <p style="font-size:15px;color:#4b5563;">If you did not request this verification code, please ignore this email.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
+        case 'admin_login_otp': {
+            const otp = data.otp || '';
+            return {
+                subject: 'Admin Portal Login Verification — Zero Commission',
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
+                <tr>
+                    <td style="padding:0 40px;">
+                        <h2 style="color:#1f2937;text-align:center;">Admin Portal Verification</h2>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Administrator,</p>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">To securely access your Admin Portal dashboard, please use the verification code below:</p>
                     </td>
                 </tr>
                 <tr>
@@ -249,7 +289,7 @@ function getTemplate(templateName, data) {
         case 'user_login_otp': {
             const otp = data.otp || '';
             return {
-                subject: 'OTP for login.',
+                subject: 'User Account Login Verification — Zero Commission',
                 body: `
 <div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
@@ -259,9 +299,9 @@ function getTemplate(templateName, data) {
                 ${header}
                 <tr>
                     <td style="padding:0 40px;">
-                        <h2 style="color:#1f2937;text-align:center;">Loan Application Verification</h2>
+                        <h2 style="color:#1f2937;text-align:center;">Account Login Verification</h2>
                         <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Customer,</p>
-                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">To securely access and track your loan application, please use the verification code below:</p>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">To securely access your Zero Commission dashboard and account, please use the verification code below:</p>
                     </td>
                 </tr>
                 <tr>
@@ -274,6 +314,125 @@ function getTemplate(templateName, data) {
                         <p style="font-size:15px;color:#4b5563;">This OTP is valid for <strong>5 minutes</strong>.</p>
                         <p style="font-size:15px;color:#4b5563;">Never share this OTP with anyone.</p>
                         <p style="font-size:15px;color:#4b5563;">If you did not request this verification code, please ignore this email.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
+        case 'track_application_otp': {
+            const otp = data.otp || '';
+            return {
+                subject: 'Loan Application Tracking Verification — Zero Commission',
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
+                <tr>
+                    <td style="padding:0 40px;">
+                        <h2 style="color:#1f2937;text-align:center;">Loan Application Verification</h2>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Customer,</p>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">To securely access and track your loan application status, please use the verification code below:</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding:25px;">
+                        <div style="background:#0057FF;color:#ffffff;display:inline-block;padding:18px 40px;border-radius:10px;font-size:34px;font-weight:bold;letter-spacing:8px;">${otp}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0 40px;">
+                        <p style="font-size:15px;color:#4b5563;">This OTP is valid for <strong>5 minutes</strong>.</p>
+                        <p style="font-size:15px;color:#4b5563;">Never share this OTP with anyone.</p>
+                        <p style="font-size:15px;color:#4b5563;">If you did not request this verification code, please ignore this email.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
+        case 'track_consultation_otp': {
+            const otp = data.otp || '';
+            return {
+                subject: 'Consultation Ticket Tracking Verification — Zero Commission',
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
+                <tr>
+                    <td style="padding:0 40px;">
+                        <h2 style="color:#1f2937;text-align:center;">Consultation Ticket Verification</h2>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Customer,</p>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">To securely access and track your consultation ticket and advisor messages, please use the verification code below:</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding:25px;">
+                        <div style="background:#0057FF;color:#ffffff;display:inline-block;padding:18px 40px;border-radius:10px;font-size:34px;font-weight:bold;letter-spacing:8px;">${otp}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0 40px;">
+                        <p style="font-size:15px;color:#4b5563;">This OTP is valid for <strong>5 minutes</strong>.</p>
+                        <p style="font-size:15px;color:#4b5563;">Never share this OTP with anyone.</p>
+                        <p style="font-size:15px;color:#4b5563;">If you did not request this verification code, please ignore this email.</p>
+                    </td>
+                </tr>
+                ${sig}
+                ${footer}
+            </table>
+        </td>
+    </tr>
+</table>
+</div>`
+            };
+        }
+
+        case 'forgot_password_otp': {
+            const otp = data.otp || '';
+            return {
+                subject: 'Password Reset Verification Code — Zero Commission',
+                body: `
+<div style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+                ${header}
+                <tr>
+                    <td style="padding:0 40px;">
+                        <h2 style="color:#1f2937;text-align:center;">Password Reset Verification</h2>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">Dear Customer,</p>
+                        <p style="font-size:16px;color:#4b5563;line-height:1.7;">We received a request to reset your account password. To securely reset your password, please use the verification code below:</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" style="padding:25px;">
+                        <div style="background:#0057FF;color:#ffffff;display:inline-block;padding:18px 40px;border-radius:10px;font-size:34px;font-weight:bold;letter-spacing:8px;">${otp}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0 40px;">
+                        <p style="font-size:15px;color:#4b5563;">This OTP is valid for <strong>5 minutes</strong>.</p>
+                        <p style="font-size:15px;color:#4b5563;">If you did not request a password reset, please ignore this email and your password will remain unchanged.</p>
                     </td>
                 </tr>
                 ${sig}

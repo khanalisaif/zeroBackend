@@ -4,11 +4,17 @@ import { sendTemplateMail } from '../../../services/email/mail_helper.js';
 export async function createUser(req, res) {
     const number = (req.body.number || '').trim();
     const email = (req.body.email || '').trim();
-    const name = (req.body.name || '').trim();
+    const first_name = (req.body.first_name || '').trim();
+    const last_name = (req.body.last_name || '').trim();
+    const pan_number = (req.body.pan_number || '').trim();
     const password = (req.body.password || '').trim();
 
+    if (!first_name) {
+        return res.status(400).json({ status: false, message: 'First name is required.' });
+    }
+
     try {
-        const response = await _createUser(number, email, name, password);
+        const response = await _createUser(number, email, first_name, last_name, pan_number, password);
         if (!response.status || !response.is_new_user) {
             return res.status(400).json(response);
         }

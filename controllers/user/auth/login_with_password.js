@@ -60,9 +60,12 @@ export async function loginWithPassword(req, res) {
             message: 'Login successful.',
             data: {
                 id: updatedUser._id,
+                first_name: updatedUser.first_name || '',
+                last_name: updatedUser.last_name || '',
                 name: updatedUser.name,
                 email: updatedUser.email,
                 number: updatedUser.number,
+                pan_number: updatedUser.pan_number || '',
                 profile_pic: updatedUser.profile_pic || null,
                 access_token: accessToken,
                 refresh_token: refreshToken,

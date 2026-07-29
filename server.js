@@ -8,6 +8,7 @@ import adminAuthRouter from './routes/admin/authRoutes.js';
 
 // Admin Feature Routes
 import adminFeatureRouter from './routes/admin/featureRoutes.js';
+import masterAdminRouter from './routes/admin/masterRoutes.js';
 
 // User Auth Routes
 import userAuthRouter from './routes/user/authRoutes.js';
@@ -29,6 +30,8 @@ app.get('/', (req, res) => {
 // Admin routes
 app.use('/admin/auth', adminAuthRouter);
 app.use('/admin/feature', adminFeatureRouter);
+app.use('/admin/master', masterAdminRouter);
+
 
 // User routes
 app.use('/user/auth', userAuthRouter);
