@@ -7,6 +7,7 @@ export async function updateProfile(req, res) {
 
         const first_name = (req.body.first_name || '').trim();
         const last_name = (req.body.last_name || '').trim();
+        const pan_number = (req.body.pan_number || '').trim();
 
         if (!first_name) {
             return res.status(400).json({ status: false, message: 'First name is required.' });
@@ -19,6 +20,9 @@ export async function updateProfile(req, res) {
             last_name,
             name: fullName
         };
+        if (pan_number) {
+            updates.pan_number = pan_number.toUpperCase();
+        }
 
         await User.updateOne({ _id: user._id }, { $set: updates });
         const updatedUser = await User.findById(user._id).lean();
