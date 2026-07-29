@@ -20,8 +20,13 @@ export async function refreshApplication(req, res) {
         if (new Date() > new Date(user.access_token_expires_at))
             return res.json({ status: false, message: 'Access token expired' });
 
-        // Fetch latest loan application
-        const app = await LoanApplication.findOne({ user_id: user._id }).sort({ _id: -1 }).lean();
+        // Fetch latest loan application or specific application if token/id provided
+        let appQuery = { $or: [{ user_id: user._id }, { email: user.email }] };
+        if (req.body.token || req.body.loan_application_id || req.body.application_token) {
+            const val = req.body.token || req.body.loan_application_id || req.body.application_token;
+            appQuery = { $or: [{ application_token: val }, { _id: val }, { user_id: user._id }, { email: user.email }] };
+        }
+        const app = await LoanApplication.findOne(appQuery).sort({ _id: -1 }).lean();
         if (!app) return res.json({ status: false, message: 'Loan application not found' });
 
         const loanApplicationId = app._id;
@@ -79,12 +84,18 @@ export async function refreshApplication(req, res) {
             status: true,
             message: 'Data fetched successfully',
             loan_application_id: loanApplicationId,
+            application_token: app.application_token || app._id?.toString() || '',
+            name: app.name || user.name || 'User',
+            phone: app.number || user.number || '',
+            loan_type: app.loan_type || '',
             document_ids: documentIds,
             current_status: currentStatus,
             timeline,
             document_status: documentStatus,
             remarks,
+            summary: remarks,
             last_updated_at: lastUpdatedAt,
+            created_at: app.created_at || null,
             documents
         });
     } catch (err) {

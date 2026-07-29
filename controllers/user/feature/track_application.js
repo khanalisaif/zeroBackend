@@ -50,10 +50,18 @@ export async function trackApplication(req, res) {
         return res.json({
             status: true,
             data: {
-                user_id: user._id, access_token: accessToken, refresh_token: refreshToken,
+                user_id: user._id,
+                name: app.name || user.name || 'User',
+                phone: app.number || user.number || '',
+                access_token: accessToken, refresh_token: refreshToken,
                 access_token_expires_at: accessExpiry.toISOString(), refresh_token_expires_at: refreshExpiry.toISOString(),
                 application: {
                     id: app._id,
+                    token: app.application_token || app._id?.toString(),
+                    application_token: app.application_token || app._id?.toString(),
+                    loan_type: app.loan_type || '',
+                    name: app.name || user.name || 'User',
+                    number: app.number || user.number || '',
                     status: history ? history.status : app.status,
                     remarks: history ? history.case_history : '',
                     document_status: docs ? docs.document_status : 'Pending',
