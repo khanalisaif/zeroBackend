@@ -1,10 +1,7 @@
 // cloudinary_upload.js — equivalent of cloudinary_upload.php
-// Uses native form-data upload via node-fetch (same cURL logic)
+// Uses official Cloudinary Node.js SDK to prevent form-data deprecation warnings
 
-import crypto from 'crypto';
-import fs from 'fs';
-import FormData from 'form-data';
-import fetch from 'node-fetch';
+import { v2 as cloudinary } from 'cloudinary';
 
 /**
  * Upload a file to Cloudinary
@@ -13,34 +10,22 @@ import fetch from 'node-fetch';
  * @param {string} cloudName
  * @param {string} apiKey
  * @param {string} apiSecret
- * @returns {{ url: string, public_id: string }}
+ * @returns {Promise<{ url: string, public_id: string }>}
  */
 export async function uploadToCloudinary(filePath, folder, cloudName, apiKey, apiSecret) {
-    const timestamp = Math.floor(Date.now() / 1000);
+    cloudinary.config({
+        cloud_name: cloudName,
+        api_key: apiKey,
+        api_secret: apiSecret,
+        secure: true
+    });
 
-    const signature = crypto
-        .createHash('sha1')
-        .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)
-        .digest('hex');
+    const result = await cloudinary.uploader.upload(filePath, {
+        folder: folder,
+        resource_type: 'auto'
+    });
 
-    const form = new FormData();
-    form.append('file', fs.createReadStream(filePath));
-    form.append('api_key', apiKey);
-    form.append('timestamp', timestamp.toString());
-    form.append('folder', folder);
-    form.append('signature', signature);
-
-    const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-        {
-            method: 'POST',
-            body: form
-        }
-    );
-
-    const result = await response.json();
-
-    if (!result.secure_url) {
+    if (!result || !result.secure_url) {
         throw new Error('Cloudinary upload failed');
     }
 
