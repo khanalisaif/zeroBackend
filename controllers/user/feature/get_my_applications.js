@@ -1,24 +1,31 @@
 import { LoanApplication } from '../../../models/LoanApplication.js';
 import { LoanApplicationHistory } from '../../../models/LoanApplicationHistory.js';
 import { LoanApplicationDocuments } from '../../../models/LoanApplicationDocuments.js';
+import { User } from '../../../models/User.js';
 
 export async function getMyApplications(req, res) {
     try {
         const user = req.user;
         if (!user) return res.status(401).json({ status: false, message: 'Unauthorized' });
 
-        const email = user.email || '';
-        const number = user.number || '';
+        const email = (user.email || '').trim();
+        const number = (user.number || '').trim();
 
-        if (!email && !number) {
-            return res.json({ status: true, data: [] });
-        }
-
-        const query = [];
-        if (email) query.push({ email });
+        const query = [{ user_id: user._id }];
+        if (email) query.push({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
         if (number) query.push({ number });
 
         const apps = await LoanApplication.find({ $or: query }).sort({ _id: -1 }).lean();
+
+        // Automatically link any applications that aren't linked yet
+        if (apps.length > 0) {
+            const unlinkedIds = apps.filter(a => !a.user_id || a.user_id.toString() !== user._id.toString()).map(a => a._id);
+            if (unlinkedIds.length > 0) {
+                await LoanApplication.updateMany({ _id: { $in: unlinkedIds } }, { $set: { user_id: user._id } });
+            }
+            const allAppIds = apps.map(a => a._id.toString());
+            await User.updateOne({ _id: user._id }, { $set: { application_ids: JSON.stringify(allAppIds) } });
+        }
 
         for (let app of apps) {
             const history = await LoanApplicationHistory.findOne({ loan_application_id: app._id }).sort({ _id: -1 }).lean();

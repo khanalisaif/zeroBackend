@@ -37,33 +37,39 @@ export async function verifyOtp(req, res) {
         const currentStatus = latestHistory?.status || app.status || 'Pending';
         const documentStatus = docs?.document_status || app.Document_Status || 'Pending';
 
-        // Build timeline array
-        const timeline = [];
-
-        // Application Submitted entry
-        timeline.push({
-            title: 'Application Submitted',
-            summary: 'Loan application submitted successfully.',
-            datetime: app.created_at ? app.created_at.toISOString() : null,
-        });
-
-        // Documents Uploaded entry
-        if (docs && docs.created_at) {
-            timeline.push({
-                title: 'Documents Uploaded',
-                summary: 'Documents submitted successfully.',
-                datetime: docs.created_at.toISOString(),
-            });
+        // Build timeline array matching get_my_applications
+        let timeline = [];
+        if (latestHistory && latestHistory.case_history) {
+            try {
+                const parsed = typeof latestHistory.case_history === 'string'
+                    ? JSON.parse(latestHistory.case_history)
+                    : latestHistory.case_history;
+                if (Array.isArray(parsed)) timeline = parsed;
+            } catch (_) {
+                timeline = [];
+            }
         }
-
-        // History status entries
-        for (const h of historyList) {
-            if (h.status && !['Pending', 'pending'].includes(h.status)) {
+        if (timeline.length === 0) {
+            timeline.push({
+                title: 'Application Submitted',
+                summary: 'Loan application submitted successfully.',
+                datetime: app.created_at ? app.created_at.toISOString() : null,
+            });
+            if (docs && docs.created_at) {
                 timeline.push({
-                    title: h.status,
-                    summary: h.case_history || '',
-                    datetime: h.created_at ? h.created_at.toISOString() : null,
+                    title: 'Documents Uploaded',
+                    summary: 'Documents submitted successfully.',
+                    datetime: docs.created_at.toISOString(),
                 });
+            }
+            for (const h of historyList) {
+                if (h.status && !['Pending', 'pending'].includes(h.status)) {
+                    timeline.push({
+                        title: h.status,
+                        summary: h.case_history || '',
+                        datetime: h.created_at ? h.created_at.toISOString() : null,
+                    });
+                }
             }
         }
 
