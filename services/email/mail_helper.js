@@ -1004,6 +1004,20 @@ ${footer}
             const status = data.status || 'Updated';
             const remarks = data.remarks || 'No additional remarks provided.';
             const name = data.name || 'Applicant';
+
+            let statusColor = '#0057FF'; // default blue
+            let statusBg = '#eef5ff';
+            if (status === 'Resolved' || status === 'Closed') {
+                statusColor = '#10B981'; // green
+                statusBg = '#ecfdf5';
+            } else if (status === 'Pending') {
+                statusColor = '#8B5CF6'; // purple
+                statusBg = '#f5f3ff';
+            } else if (status === 'Open' || status === 'In Progress') {
+                statusColor = '#F59E0B'; // amber
+                statusBg = '#fffbeb';
+            }
+
             return {
                 subject: `Update on Your Contact Request — Zero Commission`,
                 body: `
@@ -1011,29 +1025,38 @@ ${footer}
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
     <tr>
         <td align="center">
-            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06);">
                 ${header}
                 <tr>
-                    <td style="padding:40px 40px 10px 40px;">
-                        <h2 style="margin:0 0 15px 0;font-size:22px;color:#1e293b;">Dear ${name},</h2>
-                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">There has been an update regarding your contact inquiry.</p>
+                    <td style="padding:0 40px;">
+                        <h2 style="color:#1f2937;text-align:center;font-size:22px;margin-bottom:10px;">Contact Inquiry Updated</h2>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">Dear <strong>${name}</strong>,</p>
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">There is a new update regarding your contact inquiry.</p>
                     </td>
                 </tr>
                 <tr>
                     <td style="padding:15px 40px;">
-                        <table width="100%" cellpadding="16" cellspacing="0" style="background:#f8fafc;border-left:4px solid #0197E0;border-radius:8px;">
-                            <tr>
-                                <td style="font-size:14px;color:#334155;">
-                                    <p style="margin:0 0 8px 0;"><strong>Status:</strong> <span style="color:#0197E0;font-weight:bold;">${status}</span></p>
-                                    <p style="margin:0;"><strong>Admin Reply / Remarks:</strong><br/>${remarks}</p>
-                                </td>
-                            </tr>
-                        </table>
+                        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="font-size:14px;color:#6b7280;padding-bottom:15px;">Current Status:</td>
+                                    <td align="right" style="padding-bottom:15px;">
+                                        <span style="background:${statusBg};color:${statusColor};font-size:13px;font-weight:bold;padding:6px 14px;border-radius:20px;display:inline-block;">${status}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="border-top:1px dashed #d1d5db;padding-top:15px;">
+                                        <div style="font-size:13px;font-weight:bold;color:#4b5563;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Admin Response / Remarks:</div>
+                                        <div style="font-size:15px;color:#1f2937;line-height:1.6;background:#ffffff;border:1px solid #e5e7eb;padding:12px 15px;border-radius:8px;">${remarks}</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding:15px 40px 30px 40px;">
-                        <p style="font-size:14px;color:#64748b;margin:0;">If you have further questions, feel free to reply to this email or submit a new inquiry on our website.</p>
+                    <td style="padding:10px 40px 25px 40px;">
+                        <p style="font-size:15px;color:#4b5563;line-height:1.7;">If you have any further questions, feel free to reply to this email or submit a new inquiry on our website.</p>
                     </td>
                 </tr>
                 ${sig}
