@@ -1,4 +1,5 @@
 import { LoanApplicationDocuments } from '../../../models/LoanApplicationDocuments.js';
+import { LoanApplication } from '../../../models/LoanApplication.js';
 import mongoose from 'mongoose';
 
 export async function getDocumentDetails(req, res) {
@@ -10,18 +11,24 @@ export async function getDocumentDetails(req, res) {
             return res.json({ status: false, message: 'Please provide id or loan_application_id' });
         }
 
-        let query = {};
-        if (id) {
-            if (mongoose.Types.ObjectId.isValid(id)) {
-                query._id = id;
-            } else {
-                query.loan_application_id = id;
-            }
-        } else if (loan_application_id) {
-            query.loan_application_id = loan_application_id;
+        const param = (id || loan_application_id || '').trim();
+
+        const queryConditions = [];
+        if (mongoose.Types.ObjectId.isValid(param)) {
+            queryConditions.push({ _id: param });
+            queryConditions.push({ loan_application_id: param });
         }
 
-        const doc = await LoanApplicationDocuments.findOne(query).lean();
+        let loanAppId = param;
+        if (!mongoose.Types.ObjectId.isValid(param)) {
+            const app = await LoanApplication.findOne({ application_token: param }).lean();
+            if (app) {
+                loanAppId = app._id;
+            }
+        }
+        queryConditions.push({ loan_application_id: loanAppId });
+
+        const doc = await LoanApplicationDocuments.findOne({ $or: queryConditions }).sort({ _id: -1 }).lean();
         if (!doc) return res.json({ status: false, message: 'Record not found' });
         
         return res.json({ status: true, message: 'Document details fetched successfully', data: doc });

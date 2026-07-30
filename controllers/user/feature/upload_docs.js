@@ -8,17 +8,22 @@ import { LoanApplicationHistory } from '../../../models/LoanApplicationHistory.j
 export async function uploadDocs(req, res) {
     try {
         const document_id = (req.body.document_id || '').trim();
-        const loan_application_id = (req.body.loan_application_id || '').trim();
+        const tokenOrId = (req.body.loan_application_id || req.body.token || req.body.application_token || '').trim();
         const document_status = (req.body.document_status || 'Under Review').trim();
         const remarks = (req.body.remarks || '').trim();
 
-        if (!loan_application_id) {
-            return res.json({ status: false, message: 'loan_application_id is required' });
+        if (!tokenOrId) {
+            return res.json({ status: false, message: 'loan_application_id or token is required' });
         }
-        if (!mongoose.isValidObjectId(loan_application_id)) return res.json({ status: false, message: 'Invalid loan_application_id format' });
 
-        const app = await LoanApplication.findById(loan_application_id).lean();
+        const query = [{ application_token: tokenOrId }];
+        if (mongoose.isValidObjectId(tokenOrId)) {
+            query.push({ _id: tokenOrId });
+        }
+        const app = await LoanApplication.findOne({ $or: query }).lean();
         if (!app) return res.json({ status: false, message: 'Application not found' });
+
+        const loan_application_id = app._id;
 
         const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
         const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -76,7 +81,7 @@ export async function uploadDocs(req, res) {
             }
         }
 
-        await LoanApplication.updateOne({ _id: loan_application_id }, { Document_Status: document_status });
+        await LoanApplication.updateOne({ _id: loan_application_id }, { Document_Status: document_status, document_status: document_status });
 
         // Append to case_history (same as PHP addCaseHistory)
         const historyRecord = await LoanApplicationHistory.findOne({ loan_application_id }).lean();

@@ -46,8 +46,8 @@ router.post('/request_track_application', requestTrackApplication);
 router.post('/track_application', trackApplication);
 router.post('/verify_otp', verifyOtp);
 
-// Protected routes (as per original logic, upload_docs had user_auth)
-router.post('/upload_docs', userAuth, multiUpload, uploadDocs);
+// Document upload (accessible to both guest loan applicants via token and logged in users)
+router.post('/upload_docs', multiUpload, uploadDocs);
 router.get('/get_my_applications', userAuth, getMyApplications);
 router.get('/get_my_consultations', userAuth, getMyConsultations);
 
