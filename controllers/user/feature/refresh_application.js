@@ -5,45 +5,99 @@ import { LoanApplicationDocuments } from '../../../models/LoanApplicationDocumen
 
 export async function refreshApplication(req, res) {
     try {
-        // Read Bearer token from Authorization header (same as PHP)
         const authHeader = req.headers['authorization'] || '';
         const match = authHeader.match(/Bearer\s+(.+)/i);
-        if (!match) return res.json({ status: false, message: 'Access token is required' });
-        const accessToken = match[1].trim();
+        const bearerToken = match ? match[1].trim() : '';
 
-        const user = await User.findOne({ access_token: accessToken }).lean();
-        if (!user) return res.json({ status: false, message: 'Invalid access token' });
+        const tokenParam = (req.body.token || req.body.application_token || req.body.loan_application_id || bearerToken || '').trim();
 
-        if (user.account_status && user.account_status !== 'active')
-            return res.json({ status: false, message: 'Account is not active' });
-
-        if (new Date() > new Date(user.access_token_expires_at))
-            return res.json({ status: false, message: 'Access token expired' });
-
-        // Fetch latest loan application or specific application if token/id provided
-        let appQuery = { $or: [{ user_id: user._id }, { email: user.email }] };
-        if (req.body.token || req.body.loan_application_id || req.body.application_token) {
-            const val = req.body.token || req.body.loan_application_id || req.body.application_token;
-            appQuery = { $or: [{ application_token: val }, { _id: val }, { user_id: user._id }, { email: user.email }] };
+        if (!tokenParam) {
+            return res.json({ status: false, message: 'Token or Application ID is required' });
         }
-        const app = await LoanApplication.findOne(appQuery).sort({ _id: -1 }).lean();
-        if (!app) return res.json({ status: false, message: 'Loan application not found' });
+
+        let app = null;
+        let user = null;
+
+        if (bearerToken) {
+            user = await User.findOne({ access_token: bearerToken }).lean();
+            if (user) {
+                if (user.account_status && user.account_status !== 'active')
+                    return res.json({ status: false, message: 'Account is not active' });
+                if (user.access_token_expires_at && new Date() > new Date(user.access_token_expires_at))
+                    return res.json({ status: false, message: 'Access token expired' });
+            }
+        }
+
+        const queryConditions = [];
+
+        if (tokenParam) {
+            queryConditions.push({ application_token: tokenParam });
+            if (/^[0-9a-fA-F]{24}$/.test(tokenParam)) {
+                queryConditions.push({ _id: tokenParam });
+            }
+        }
+
+        if (bearerToken && bearerToken !== tokenParam) {
+            queryConditions.push({ application_token: bearerToken });
+            if (/^[0-9a-fA-F]{24}$/.test(bearerToken)) {
+                queryConditions.push({ _id: bearerToken });
+            }
+        }
+
+        if (user) {
+            queryConditions.push({ user_id: user._id });
+            if (user.email) {
+                queryConditions.push({ email: { $regex: new RegExp(`^${user.email}$`, 'i') } });
+            }
+        }
+
+        if (queryConditions.length > 0) {
+            app = await LoanApplication.findOne({ $or: queryConditions }).sort({ _id: -1 }).lean();
+        }
+
+        if (!app) return res.json({ status: false, message: 'Loan application not found or invalid token' });
 
         const loanApplicationId = app._id;
 
-        // Fetch latest history
-        const history = await LoanApplicationHistory.findOne({ loan_application_id: loanApplicationId }).sort({ _id: -1 }).lean();
-
-        let currentStatus = '';
-        let timeline = [];
-        if (history) {
-            currentStatus = history.status || '';
-            try { timeline = JSON.parse(history.case_history) || []; } catch { timeline = []; }
-            if (!Array.isArray(timeline)) timeline = [];
-        }
-
-        // Fetch latest documents
+        const historyList = await LoanApplicationHistory.find({ loan_application_id: loanApplicationId }).sort({ _id: 1 }).lean();
         const docs = await LoanApplicationDocuments.findOne({ loan_application_id: loanApplicationId }).sort({ _id: -1 }).lean();
+
+        const latestHistory = historyList.length ? historyList[historyList.length - 1] : null;
+        const currentStatus = latestHistory?.status || app.status || 'Pending';
+        let timeline = [];
+        if (latestHistory && latestHistory.case_history) {
+            try {
+                const parsed = typeof latestHistory.case_history === 'string'
+                    ? JSON.parse(latestHistory.case_history)
+                    : latestHistory.case_history;
+                if (Array.isArray(parsed)) timeline = parsed;
+            } catch (_) {
+                timeline = [];
+            }
+        }
+        if (timeline.length === 0) {
+            timeline.push({
+                title: 'Application Submitted',
+                summary: 'Loan application submitted successfully.',
+                datetime: app.created_at ? app.created_at.toISOString() : null,
+            });
+            if (docs && docs.created_at) {
+                timeline.push({
+                    title: 'Documents Uploaded',
+                    summary: 'Documents submitted successfully.',
+                    datetime: docs.created_at.toISOString(),
+                });
+            }
+            for (const h of historyList) {
+                if (h.status && !['Pending', 'pending'].includes(h.status)) {
+                    timeline.push({
+                        title: h.status,
+                        summary: h.case_history || '',
+                        datetime: h.created_at ? h.created_at.toISOString() : null,
+                    });
+                }
+            }
+        }
 
         let documentStatus = '';
         let remarks = '';
@@ -85,8 +139,8 @@ export async function refreshApplication(req, res) {
             message: 'Data fetched successfully',
             loan_application_id: loanApplicationId,
             application_token: app.application_token || app._id?.toString() || '',
-            name: app.name || user.name || 'User',
-            phone: app.number || user.number || '',
+            name: app.name || (user ? user.name : 'User'),
+            phone: app.number || (user ? user.number : ''),
             loan_type: app.loan_type || '',
             document_ids: documentIds,
             current_status: currentStatus,

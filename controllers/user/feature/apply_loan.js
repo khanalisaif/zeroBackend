@@ -16,16 +16,19 @@ export async function applyLoan(req, res) {
         const monthly_income = (req.body.monthly_income || '').trim();
         const loan_amount = (req.body.loan_amount || '').trim();
         const tenure = (req.body.tenure || '').trim();
-        const description = (req.body.description || '').trim();
+        const description = (req.body.description || req.body.message || '').trim();
 
-        if (!name || !number || !email || !loan_type || !city || !profession || !pan_number || !monthly_income || !loan_amount) {
+        if (!name || !number || !email || !loan_type || !profession || !loan_amount) {
             return res.status(400).json({ status: false, message: 'All mandatory fields are required.' });
         }
 
-        const cleanPan = pan_number.toUpperCase();
-        const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-        if (!panRegex.test(cleanPan)) {
-            return res.status(400).json({ status: false, message: 'Invalid PAN card format.' });
+        let cleanPan = '';
+        if (pan_number) {
+            cleanPan = pan_number.toUpperCase();
+            const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+            if (!panRegex.test(cleanPan)) {
+                return res.status(400).json({ status: false, message: 'Invalid PAN card format.' });
+            }
         }
 
         // Generate application token matching PHP (ZCL + YYMMDD + 5 hex)
