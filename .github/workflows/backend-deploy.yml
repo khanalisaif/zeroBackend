@@ -1,0 +1,24 @@
+name: Zero Commission Backend Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /root/zerocommission/zeroBackend
+            git pull origin main
+            npm install
+            pm2 restart zerocommission-backend --update-env
+            pm2 save
