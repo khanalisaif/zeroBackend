@@ -17,8 +17,4 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /root/zerocommission/zeroBackend
-            git pull origin main
-            npm install
-            pm2 restart zerocommission-backend --update-env
-            pm2 save
+            /root/deploy-zerocommission-backend.sh
