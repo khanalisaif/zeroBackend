@@ -31,7 +31,26 @@ export async function applyLoan(req, res) {
             }
         }
 
-        // Generate application token matching PHP (ZCL + YYMMDD + 5 hex)
+        // ─── Duplicate Application Check ─────────────────────────────────────
+        // Same email ya same mobile number se pehle se koi application hai to block karo
+        const duplicateApp = await LoanApplication.findOne({
+            $or: [
+                { email: { $regex: new RegExp(`^${email}$`, 'i') } },
+                { number: number }
+            ]
+        }).lean();
+
+        if (duplicateApp) {
+            const conflictField = duplicateApp.email?.toLowerCase() === email.toLowerCase()
+                ? 'email address'
+                : 'mobile number';
+            return res.status(409).json({
+                status: false,
+                message: `An application with this ${conflictField} already exists.`
+            });
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, '');
         const randomHex = Math.floor(Math.random() * 0xFFFFF).toString(16).toUpperCase().padStart(5, '0');
         const application_token = `ZCL${datePart}${randomHex}`;
