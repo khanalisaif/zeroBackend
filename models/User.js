@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     access_token_expires_at: { type: Date, default: null },
     refresh_token_expires_at: { type: Date, default: null },
     last_login_at: { type: Date, default: null },
-    application_ids: { type: String, default: null } // Storing JSON string array of IDs like in MySQL or we could use Array
+    application_ids: { type: String, default: null } // StoringJSON string array of IDs like in MySQL or we could use Array
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 export const User = mongoose.model('User', userSchema);
