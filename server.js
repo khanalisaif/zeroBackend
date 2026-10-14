@@ -3,18 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { connectDB } from './models/db.js';
 
-// Admin Auth Routes
-import adminAuthRouter from './routes/admin/authRoutes.js';
-
-// Admin Feature Routes
-import adminFeatureRouter from './routes/admin/featureRoutes.js';
-import masterAdminRouter from './routes/admin/masterRoutes.js';
-
-// User Auth Routes
-import userAuthRouter from './routes/user/authRoutes.js';
-
-// User Feature Routes
-import userFeatureRouter from './routes/user/featureRoutes.js';
+// User routes mapped in apiRoutes.js
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,16 +16,9 @@ app.get('/', (req, res) => {
     res.send('Welcome to zerocommission backend');
 });
 
-// Admin routes
-app.use('/admin/auth', adminAuthRouter);
-app.use('/admin/feature', adminFeatureRouter);
-app.use('/admin/master', masterAdminRouter);
+import apiRouter from './routes/apiRoutes.js';
 
-
-// User routes
-app.use('/user/auth', userAuthRouter);
-app.use('/user/feature', userFeatureRouter);
-
+app.use('/api', apiRouter);
 app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
     

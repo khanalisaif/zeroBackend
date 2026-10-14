@@ -13,9 +13,8 @@ const router = express.Router();
 
 // Publicly accessible master login endpoints
 router.post('/login', masterAdminLogin);
-router.post('/send_otp', masterSendOtp);
-router.post('/verify_otp', masterVerifyOtp);
-
+router.post('/send-otp', masterSendOtp);
+router.post('/verify-otp', masterVerifyOtp);
 
 // Protected master admin endpoints
 router.get('/dashboard', masterAdminAuth, getMasterDashboard);

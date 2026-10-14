@@ -1,5 +1,5 @@
 import { LoanApplication } from '../../../models/LoanApplication.js';
-import mongoose from 'mongoose';
+import { sendTemplateMail } from '../../../services/email/mail_helper.js';
 
 export async function openApplication(req, res) {
     try {
@@ -9,7 +9,14 @@ export async function openApplication(req, res) {
         const app = await LoanApplication.findById(id).lean();
         if (!app) return res.json({ status: false, message: 'Application not found' });
 
-        await LoanApplication.updateOne({ _id: id }, { is_viewed: true, viewed_at: new Date() });
+        if (!app.is_viewed) {
+            await LoanApplication.updateOne({ _id: id }, { is_viewed: true, viewed_at: new Date() });
+            if (app.email) {
+                sendTemplateMail(app.email, 'loan_application_under_review', {
+                    application_token: app.application_token
+                }).catch(() => {});
+            }
+        }
 
         return res.json({ status: true, data: app });
     } catch (err) {

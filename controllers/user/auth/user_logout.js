@@ -13,11 +13,13 @@ export async function userLogout(req, res) {
                 access_token_expires_at: null,
                 refresh_token_expires_at: null
             });
-            sendTemplateMail(user.email, 'user_logout_notification', { name: user.name }).catch(() => {});
+            if (user.email) {
+                sendTemplateMail(user.email, 'user_logout_notification', { name: user.name }).catch(() => {});
+            }
         }
 
-        return res.json({ status: true, message: 'Logout successful.' });
+        return res.status(200).json({ success: true, message: 'Logout successful.' });
     } catch (err) {
-        return res.status(500).json({ status: false, message: 'Server error', error: err.message });
+        return res.status(500).json({ success: false, message: err.message });
     }
 }

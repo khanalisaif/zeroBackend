@@ -3,9 +3,6 @@
 import express from 'express';
 import { adminAuth } from '../../middlewares/adminAuth.js';
 
-// FAQ routes
-import faqRouter from './faqRoutes.js';
-
 // Loan application routes
 import { getLoanApplications } from '../../controllers/admin/feature/get_loan_applications.js';
 import { getAllLoanApplications } from '../../controllers/admin/feature/get_all_loan_applications.js';
@@ -24,9 +21,6 @@ import userManagementRouter from './userManagementRoutes.js';
 
 const router = express.Router();
 
-// FAQ
-router.use('/faq', faqRouter);
-
 // Consultation
 router.use('/consultation', consultationRouter);
 
@@ -37,14 +31,14 @@ router.use('/contact', contactRouter);
 router.use('/users', userManagementRouter);
 
 // Loan Applications
-router.post('/get_loan_applications', adminAuth, getLoanApplications);
-router.post('/get_all_loan_applications', adminAuth, getAllLoanApplications);
-router.get('/open_application', adminAuth, openApplication);
-router.post('/update_laon_status', adminAuth, updateLoanStatus);
-router.post('/delete_loan_application', adminAuth, deleteLoanApplication);
-router.post('/update_document_status', adminAuth, updateDocumentStatus);
-router.post('/get_document_details', adminAuth, getDocumentDetails);
-router.get('/get_batches', adminAuth, getBatches);
-router.post('/export_application', adminAuth, exportApplication);
+router.get('/loan-applications', adminAuth, getLoanApplications);
+router.get('/loan-applications/all', adminAuth, getAllLoanApplications);
+router.get('/loan-applications/open', adminAuth, openApplication);
+router.post('/loan-applications/update-status', adminAuth, updateLoanStatus);
+router.post('/loan-applications/delete', adminAuth, deleteLoanApplication);
+router.post('/documents/update-status', adminAuth, updateDocumentStatus);
+router.get('/documents/details', adminAuth, getDocumentDetails);
+router.get('/batches', adminAuth, getBatches);
+router.post('/loan-applications/export', adminAuth, exportApplication);
 
 export default router;

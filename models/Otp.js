@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
 const otpSchema = new mongoose.Schema({
-    email: { type: String, required: true, trim: true },
+    email: { type: String, trim: true },
+    phone: { type: String, trim: true },
     otp: { type: String, required: true },
     attempt_count: { type: Number, default: 0 },
     expires_at: { type: Date, required: true }

@@ -13,9 +13,9 @@ const router = express.Router();
 router.use(adminAuth);
 
 router.get('/dashboard', getDashboard);
-router.get('/ticket_list', getTicketList);
-router.post('/update_consultation', updateConsultation);
-router.get('/consultation_details', getConsultationDetails);
-router.post('/delete_consultation', deleteConsultation);
+router.get('/ticket-list', getTicketList);
+router.post('/update', updateConsultation);
+router.get('/details', getConsultationDetails);
+router.post('/delete', deleteConsultation);
 
 export default router;

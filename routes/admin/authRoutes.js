@@ -12,12 +12,12 @@ import { adminAuth } from '../../middlewares/adminAuth.js';
 
 const router = express.Router();
 
-router.post('/login_with_password', loginWithPassword);
-router.post('/send_login_otp', sendLoginOtp);
-router.post('/verify_login_otp', verifyLoginOtp);
+router.post('/login-with-password', loginWithPassword);
+router.post('/send-login-otp', sendLoginOtp);
+router.post('/verify-login-otp', verifyLoginOtp);
 router.post('/logout', adminAuth, adminLogout);
-router.post('/refresh_token', adminRefreshToken);
-router.post('/create_admin', createAdmin);
+router.post('/refresh-token', adminRefreshToken);
+router.post('/create-admin', createAdmin);
 router.get('/profile', adminAuth, getAdminProfile);
 
 export default router;

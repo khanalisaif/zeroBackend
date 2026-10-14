@@ -1,6 +1,7 @@
 import { Admin } from '../../../models/Admin.js';
 import { Otp } from '../../../models/Otp.js';
 import crypto from 'crypto';
+import { sendTemplateMail } from '../../../services/email/mail_helper.js';
 
 export async function verifyLoginOtp(req, res) {
     try {
@@ -43,6 +44,10 @@ export async function verifyLoginOtp(req, res) {
             access_token_expires_at: accessExpiry,
             refresh_token_expires_at: refreshExpiry
         });
+
+        if (admin.email) {
+            sendTemplateMail(admin.email, 'admin_login_alert', {}).catch(() => {});
+        }
 
         return res.json({
             status: true,

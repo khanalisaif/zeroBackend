@@ -1,48 +1,81 @@
 import { User } from '../../../models/User.js';
+import { Address } from '../../../models/Address.js';
+
+export async function getProfile(req, res) {
+    try {
+        const user = req.user;
+        const addresses = await Address.find({ user_id: user._id }); // assuming Address model has user_id
+        
+        return res.status(200).json({
+            success: true,
+            message: 'User profile retrieved successfully.',
+            data: {
+                user: {
+                    id: user._id,
+                    full_name: user.full_name || user.name,
+                    phone: user.phone || user.number,
+                    phone_number: user.phone || user.number,
+                    pan: user.pan || user.pan_number,
+                    pan_number: user.pan || user.pan_number,
+                    email: user.email,
+                    gender: user.gender,
+                    profession: user.profession,
+                    earning_resource: user.earning_resource,
+                    annual_salary: user.annual_salary,
+                    annual_turnover: user.annual_turnover,
+                    address: user.address,
+                    avatar_url: user.avatar_url || user.profile_pic
+                },
+                addresses: addresses || []
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
 
 export async function updateProfile(req, res) {
     try {
         const user = req.user;
-        if (!user) return res.status(401).json({ status: false, message: 'Unauthorized' });
-
-        const first_name = (req.body.first_name || '').trim();
-        const last_name = (req.body.last_name || '').trim();
-        const pan_number = (req.body.pan_number || '').trim();
-
-        if (!first_name) {
-            return res.status(400).json({ status: false, message: 'First name is required.' });
-        }
-
-        const fullName = [first_name, last_name].filter(Boolean).join(' ');
-
-        const updates = {
-            first_name,
-            last_name,
-            name: fullName
-        };
-        if (pan_number) {
-            updates.pan_number = pan_number.toUpperCase();
-        }
-
-        await User.updateOne({ _id: user._id }, { $set: updates });
-        const updatedUser = await User.findById(user._id).lean();
-
-        return res.json({
-            status: true,
-            message: 'Profile updated successfully',
-            data: {
-                id: updatedUser._id,
-                first_name: updatedUser.first_name || '',
-                last_name: updatedUser.last_name || '',
-                name: updatedUser.name || '',
-                email: updatedUser.email || '',
-                number: updatedUser.number || '',
-                pan_number: updatedUser.pan_number || '',
-                profile_pic: updatedUser.profile_pic || ''
-            }
+        const { full_name, name, earning_resource, annual_salary, annual_turnover, profession, gender, email, address } = req.body;
+        
+        if (full_name || name) user.full_name = full_name || name;
+        if (earning_resource) user.earning_resource = earning_resource;
+        if (annual_salary) user.annual_salary = annual_salary;
+        if (annual_turnover) user.annual_turnover = annual_turnover;
+        if (profession) user.profession = profession;
+        if (gender) user.gender = gender;
+        if (email) user.email = email;
+        if (address) user.address = address;
+        
+        await user.save();
+        
+        return res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully.',
+            data: { user: { id: user._id, full_name: user.full_name, earning_resource: user.earning_resource } }
         });
-    } catch (err) {
-        return res.status(500).json({ status: false, message: 'Server error', error: err.message });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
+export async function updateAvatar(req, res) {
+    try {
+        const user = req.user;
+        const { avatar_url } = req.body;
+        if (!avatar_url) return res.status(422).json({ success: false, message: 'avatar_url is required' });
+        
+        user.avatar_url = avatar_url;
+        user.profile_pic = avatar_url;
+        await user.save();
+        
+        return res.status(200).json({
+            success: true,
+            message: 'Avatar updated successfully.',
+            data: { avatar_url: user.avatar_url }
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}

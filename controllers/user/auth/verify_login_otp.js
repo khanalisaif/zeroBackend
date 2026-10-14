@@ -1,68 +1,41 @@
 import { User } from '../../../models/User.js';
 import { Otp } from '../../../models/Otp.js';
 import crypto from 'crypto';
+import { sendTemplateMail } from '../../../services/email/mail_helper.js';
 
 export async function verifyLoginOtp(req, res) {
     try {
-        const email = (req.body.email || '').trim();
-        const otpInput = (req.body.otp || '').trim();
-
-        await Otp.deleteMany({ expires_at: { $lte: new Date() } });
-
-        const otpRecord = await Otp.findOne({ email }).sort({ _id: -1 }).lean();
-        if (!otpRecord) {
-            return res.json({ status: false, message: 'OTP expired or invalid' });
+        const { phone, otp } = req.body;
+        if (!phone || !otp) return res.status(422).json({ success: false, message: 'Validation failed' });
+        const user = await User.findOne({ $or: [{ phone }, { number: phone }] });
+        if (!user) return res.status(404).json({ success: false, message: 'User not found. Use verify-registration if new account.' });
+        
+        const otpRecord = await Otp.findOne({ phone, otp });
+        if (!otpRecord || otpRecord.expires_at < new Date()) return res.status(422).json({ success: false, message: 'Validation failed', errors: { otp: "Invalid or expired OTP" }});
+        
+        await Otp.deleteMany({ phone });
+        user.access_token = crypto.randomBytes(32).toString('hex');
+        user.last_login_at = new Date();
+        await user.save();
+        
+        if (user.email) {
+            await sendTemplateMail(user.email, 'user_login_alert', {});
         }
 
-        if (otpRecord.attempt_count >= 3) {
-            await Otp.deleteOne({ _id: otpRecord._id });
-            return res.json({ status: false, message: 'Maximum attempts reached' });
-        }
-
-        if (otpRecord.otp !== otpInput) {
-            await Otp.updateOne({ _id: otpRecord._id }, { $inc: { attempt_count: 1 } });
-            return res.json({ status: false, message: 'Incorrect OTP' });
-        }
-
-        await Otp.deleteOne({ _id: otpRecord._id });
-
-        const user = await User.findOne({ email }).lean();
-        if (!user) {
-            return res.json({ status: false, message: 'User not found' });
-        }
-
-        const accessToken = crypto.randomBytes(32).toString('hex');
-        const refreshToken = crypto.randomBytes(64).toString('hex');
-
-        const accessExpiry = new Date(Date.now() + 86400000);
-        const refreshExpiry = new Date(Date.now() + 30 * 86400000);
-
-        await User.updateOne({ _id: user._id }, {
-            access_token: accessToken,
-            refresh_token: refreshToken,
-            access_token_expires_at: accessExpiry,
-            refresh_token_expires_at: refreshExpiry,
-            last_login_at: new Date()
+        return res.status(200).json({ 
+            success: true, 
+            message: 'Login successful.', 
+            data: { 
+                token: user.access_token, 
+                user: { 
+                    id: user._id, 
+                    full_name: user.full_name || user.name, 
+                    phone: user.phone || user.number,
+                    pan: user.pan || user.pan_number,
+                    avatar_url: user.avatar_url || user.profile_pic || null,
+                    delete_account_status: user.delete_account_status || false
+                } 
+            } 
         });
-
-        return res.json({
-            status: true,
-            message: 'Login successful',
-            data: {
-                id: user._id,
-                first_name: user.first_name || '',
-                last_name: user.last_name || '',
-                name: user.name || '',
-                email: user.email,
-                number: user.number || '',
-                pan_number: user.pan_number || '',
-                access_token: accessToken,
-                refresh_token: refreshToken,
-                access_token_expires_at: accessExpiry.toISOString(),
-                refresh_token_expires_at: refreshExpiry.toISOString()
-            }
-        });
-    } catch (err) {
-        return res.status(500).json({ status: false, message: 'Server error', error: err.message });
-    }
+    } catch (error) { return res.status(500).json({ success: false, message: error.message }); }
 }
