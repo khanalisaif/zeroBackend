@@ -5,6 +5,7 @@ import { User } from '../../../models/User.js';
 import { PendingRegistration } from '../../../models/PendingRegistration.js';
 import bcrypt from 'bcrypt';
 import { sendTemplateMail } from '../../../services/email/mail_helper.js';
+import { sendOtpSms } from '../../../services/sms/smsService.js';
 
 export async function createUser(req, res) {
     try {
@@ -72,6 +73,10 @@ export async function createUser(req, res) {
             sendTemplateMail(email, 'user_login_otp', { otp: rawOtp })
                 .catch(err => console.error('Register OTP email failed:', err));
         }
+
+        // Send OTP via SMS (PRP SMS — SignUp_OTP template)
+        sendOtpSms(phone, rawOtp, 'signup')
+            .catch(err => console.error('Register OTP SMS failed:', err));
 
         // Log OTP in dev mode only (remove in production)
         if (process.env.NODE_ENV !== 'production') {
