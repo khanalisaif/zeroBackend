@@ -6,24 +6,37 @@ import bcrypt from 'bcrypt';
 export async function createAdmin(req, res) {
     try {
         const name     = (req.body.name     || '').trim();
-        const mobile   = (req.body.mobile   || '').trim();
-        const email    = (req.body.email    || '').trim();
+        const mobile   = (req.body.mobile   || req.body.number || '').trim();
+        const email    = (req.body.email    || '').trim().toLowerCase();
         const password = (req.body.password || '').trim();
 
         if (!name || !mobile || !email || !password) {
-            return res.json({ status: false, message: 'All fields are required' });
+            return res.status(422).json({ success: false, status: false, message: 'All fields (name, mobile, email, password) are required.' });
         }
 
-        // Check email exists
-        const emailRows = await Admin.findOne({ email }).lean();
-        if (emailRows) {
-            return res.json({ status: false, message: 'Email already exists' });
-        }
+        // If admin with this email exists, update credentials and details
+        const existingAdmin = await Admin.findOne({ email });
+        if (existingAdmin) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            existingAdmin.name = name;
+            existingAdmin.number = mobile;
+            existingAdmin.password = hashedPassword;
+            if (req.body.role) existingAdmin.role = req.body.role;
+            await existingAdmin.save();
 
-        // Check mobile exists
-        const mobileRows = await Admin.findOne({ number: mobile }).lean();
-        if (mobileRows) {
-            return res.json({ status: false, message: 'Mobile already exists' });
+            return res.status(200).json({
+                success: true,
+                status: true,
+                message: 'Admin account updated successfully.',
+                admin_id: existingAdmin._id,
+                data: {
+                    id: existingAdmin._id,
+                    name: existingAdmin.name,
+                    email: existingAdmin.email,
+                    mobile: existingAdmin.number,
+                    role: existingAdmin.role
+                }
+            });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -32,16 +45,26 @@ export async function createAdmin(req, res) {
             name,
             number: mobile,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            role: req.body.role || 'admin',
+            permissions: req.body.permissions || []
         });
 
-        return res.json({
+        return res.status(201).json({
+            success: true,
             status: true,
-            message: 'Admin created successfully',
-            admin_id: newAdmin._id
+            message: 'Admin created successfully.',
+            admin_id: newAdmin._id,
+            data: {
+                id: newAdmin._id,
+                name: newAdmin.name,
+                email: newAdmin.email,
+                mobile: newAdmin.number,
+                role: newAdmin.role
+            }
         });
 
     } catch (err) {
-        return res.status(500).json({ status: false, message: err.message });
+        return res.status(500).json({ success: false, status: false, message: err.message });
     }
 }

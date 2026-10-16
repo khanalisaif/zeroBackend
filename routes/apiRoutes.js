@@ -63,9 +63,6 @@ apiRouter.use('/notifications', notificationRouter);
 apiRouter.use('/support',  supportRouter);  // /api/support/*
 apiRouter.use('/feedback', feedbackRouter); // /api/feedback/*
 
-// Module 12: Admin Management ─ /api/admin/*
-apiRouter.use('/admin', adminV2Router); // Offers CRUD, Cards CRUD, FAQs CRUD, Support settings, Deletions
-
 // Admin Auth ─ /api/admin/auth/*
 apiRouter.use('/admin/auth', adminAuthRouter);
 
@@ -74,5 +71,8 @@ apiRouter.use('/admin/feature', adminFeatureRouter);
 
 // Master Admin (super-admin) ─ /api/admin/master/*
 apiRouter.use('/admin/master', masterAdminRouter);
+
+// Module 12: Admin Management ─ /api/admin/* (offers, credit-cards, faqs, support, deletions)
+apiRouter.use('/admin', adminV2Router);
 
 export default apiRouter;

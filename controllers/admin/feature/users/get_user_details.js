@@ -1,17 +1,22 @@
+import mongoose from 'mongoose';
 import { User } from '../../../../models/User.js';
 import { LoanApplication } from '../../../../models/LoanApplication.js';
 import { Consultation } from '../../../../models/Consultation.js';
 
 export async function getUserDetails(req, res) {
     try {
-        const id = req.query.id || req.body.id || '';
+        const id = (req.query.user_id || req.query.id || req.body.user_id || req.body.id || '').trim();
         if (!id) {
-            return res.status(400).json({ status: false, message: 'User ID is required' });
+            return res.status(400).json({ status: false, success: false, message: 'User ID is required' });
+        }
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ status: false, success: false, message: 'Invalid User ID format' });
         }
 
         const user = await User.findById(id).lean();
         if (!user) {
-            return res.status(404).json({ status: false, message: 'User not found' });
+            return res.status(404).json({ status: false, success: false, message: 'User not found' });
         }
 
         const appQuery = [];
@@ -31,18 +36,23 @@ export async function getUserDetails(req, res) {
 
         return res.json({
             status: true,
+            success: true,
             message: 'User details fetched successfully',
             data: {
                 user: {
                     id: user._id,
+                    user_id: user._id,
                     first_name: user.first_name || '',
                     last_name: user.last_name || '',
                     name: user.name || [user.first_name, user.last_name].filter(Boolean).join(' ') || 'User',
                     email: user.email || '',
-                    number: user.number || '',
-                    pan_number: user.pan_number || null,
+                    number: user.number || user.phone || '',
+                    phone: user.phone || user.number || '',
+                    pan: user.pan || user.pan_number || null,
+                    pan_number: user.pan_number || user.pan || null,
                     account_status: user.account_status || 'active',
-                    profile_pic: user.profile_pic || null,
+                    profile_pic: user.profile_pic || user.avatar_url || null,
+                    avatar_url: user.avatar_url || user.profile_pic || null,
                     created_at: user.created_at || null,
                     last_login_at: user.last_login_at || null
                 },

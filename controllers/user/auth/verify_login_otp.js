@@ -15,6 +15,9 @@ export async function verifyLoginOtp(req, res) {
         
         await Otp.deleteMany({ phone });
         user.access_token = crypto.randomBytes(32).toString('hex');
+        user.access_token_expires_at = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        user.refresh_token = crypto.randomBytes(64).toString('hex');
+        user.refresh_token_expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
         user.last_login_at = new Date();
         await user.save();
         
@@ -27,6 +30,7 @@ export async function verifyLoginOtp(req, res) {
             message: 'Login successful.', 
             data: { 
                 token: user.access_token, 
+                access_token: user.access_token,
                 user: { 
                     id: user._id, 
                     full_name: user.full_name || user.name, 

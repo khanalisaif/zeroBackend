@@ -184,21 +184,25 @@ export const bookConsultation = async (req, res) => {
     try {
         const { phone, preferred_slot, notes, scheduled_date } = req.body;
         if (!phone || !preferred_slot) return sendError(res, 422, 'phone and preferred_slot are required');
+
         const booking_code = 'CONS-' + Math.random().toString(36).toUpperCase().substring(2, 8);
+        const userName = req.user?.full_name || req.user?.name || 'Valued Customer';
+        const userEmail = req.user?.email || req.body.email || null;
+
         const consultation = new Consultation({
-            user_id: req.user._id,
-            phone,
-            preferred_slot,
-            notes,
-            scheduled_date: scheduled_date || new Date(Date.now() + 24 * 60 * 60 * 1000),
-            status: 'CONFIRMED',
-            booking_code
+            ticket_id:     booking_code,                                    // required by model
+            user_id:       req.user._id,
+            customer_name: userName,
+            phone_number:  phone,
+            email:         userEmail,
+            subject:       'Credit Consultation Booking',                   // required by model
+            issue:         notes || `Preferred Slot: ${preferred_slot}`,    // required by model
+            priority:      'Normal',
+            status:        'Pending'
         });
         await consultation.save();
 
         // Send confirmation email to user if email available
-        const userEmail = req.user?.email || req.body.email;
-        const userName = req.user?.full_name || req.user?.name || 'Valued Customer';
         if (userEmail) {
             sendTemplateMail(userEmail, 'consultation_ticket_created', {
                 ticket_id: booking_code,
@@ -223,7 +227,7 @@ export const bookConsultation = async (req, res) => {
             data: {
                 booking_id: `cons-${consultation._id}`,
                 booking_code,
-                status: 'CONFIRMED',
+                status: 'Pending',
                 phone,
                 preferred_slot,
                 scheduled_date: scheduled_date || new Date().toISOString().split('T')[0]

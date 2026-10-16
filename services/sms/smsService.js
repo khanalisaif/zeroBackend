@@ -1,4 +1,4 @@
-﻿// PRP SMS Service — OTP Sending via https://api.prpsms.biz
+// PRP SMS Service — OTP Sending via https://api.prpsms.biz
 // API KEY  : fse6dRbOCQS1yNc
 // SENDER   : DGVAHN
 
@@ -23,13 +23,14 @@ const PRP_SMS_CONFIG = {
  */
 export async function sendOtpSms(mobileNo, otp, type = 'login') {
     const templateName = PRP_SMS_CONFIG.templates[type] || PRP_SMS_CONFIG.templates.login;
+    const cleanMobile = String(mobileNo || '').replace(/\D/g, '').slice(-10);
 
     const payload = {
         sender: PRP_SMS_CONFIG.sender,
         templateName,
         smsReciever: [
             {
-                mobileNo: String(mobileNo),
+                mobileNo: cleanMobile,
                 templateParams: String(otp)
             }
         ]

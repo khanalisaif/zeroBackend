@@ -4,6 +4,7 @@
 import { sendSuccess, sendError } from '../../../utils/responseHandler.js';
 import { Faq } from '../../../models/Faq.js';
 import { ContactRequest } from '../../../models/ContactRequest.js';
+import { Feedback } from '../../../models/Feedback.js';
 import { sendTemplateMail } from '../../../services/email/mail_helper.js';
 
 // Support settings (can be stored in DB or config — using env/hardcoded per doc)
@@ -52,7 +53,7 @@ export const submitQuery = async (req, res) => {
         if (!loan_type || !phone || !message) return sendError(res, 422, 'loan_type, phone, and message are required.');
         const user = req.user || {};
         const userName = user.full_name || user.name || req.body.name || 'Applicant';
-        const userEmail = user.email || req.body.email || '';
+        const userEmail = user.email || req.body.email || null;
 
         const ticket = new ContactRequest({
             loan_type,
@@ -101,28 +102,78 @@ export const submitQuery = async (req, res) => {
     } catch (e) { return sendError(res, 500, e.message); }
 };
 
+// Helper for formatting feedback date
+function formatFeedbackDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    const formattedHours = String(hours).padStart(2, '0');
+    return `${day} ${month} ${year}, ${formattedHours}:${minutes} ${ampm}`;
+}
+
 // 11.4 GET /api/feedback/index
 export const getFeedback = async (req, res) => {
-    return sendSuccess(res, 200, 'Feedback history retrieved successfully.', {
-        total_feedback: 0,
-        feedbacks: []
-    });
+    try {
+        const userId = req.user?._id;
+        const query = userId ? { user_id: userId } : {};
+        const feedbacks = await Feedback.find(query).sort({ created_at: -1 });
+
+        return sendSuccess(res, 200, 'Feedback history retrieved successfully.', {
+            total_feedback: feedbacks.length,
+            feedbacks: feedbacks.map(f => ({
+                id: f.feedback_id,
+                category: f.category,
+                rating: f.rating,
+                comment: f.comment,
+                status: f.status || 'RESOLVED',
+                admin_reply: f.admin_reply || null,
+                submitted_at: formatFeedbackDate(f.submitted_at || f.created_at)
+            }))
+        });
+    } catch (e) { return sendError(res, 500, e.message); }
 };
 
 // 11.5 POST /api/feedback/index
 export const submitFeedback = async (req, res) => {
     try {
-        const { rating, category, comment } = req.body;
+        const { rating, category, comment, email } = req.body;
         if (!rating || !category || !comment) return sendError(res, 422, 'rating, category, and comment are required.');
+
+        const numericRating = Number(rating);
+        if (isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
+            return sendError(res, 422, 'rating must be a number between 1 and 5.');
+        }
+
         const id = 'FB-' + Math.floor(10000 + Math.random() * 90000);
+        const userEmail = email || req.user?.email || null;
+
+        const newFeedback = new Feedback({
+            feedback_id: id,
+            user_id: req.user._id,
+            rating: numericRating,
+            category: String(category).trim(),
+            comment: String(comment).trim(),
+            email: userEmail,
+            status: 'PENDING',
+            submitted_at: new Date()
+        });
+        await newFeedback.save();
+
         return res.status(201).json({
             success: true,
             message: 'Feedback submitted successfully.',
             data: {
                 id,
-                rating,
-                category,
-                submitted_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+                rating: numericRating,
+                category: newFeedback.category,
+                submitted_at: formatFeedbackDate(newFeedback.submitted_at)
             }
         });
     } catch (e) { return sendError(res, 500, e.message); }

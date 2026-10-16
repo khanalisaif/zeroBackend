@@ -2,11 +2,11 @@ import { Admin } from '../../../models/Admin.js';
 
 export async function updateAdminPermissions(req, res) {
     try {
-        const id = req.body.id || req.body.adminId || '';
+        const id = (req.body.adminId || req.body.admin_id || req.body.id || req.query.adminId || req.query.admin_id || req.query.id || '').trim();
         const permissions = req.body.permissions || [];
 
         if (!id) {
-            return res.json({ status: false, message: 'Admin ID is required' });
+            return res.json({ status: false, success: false, message: 'Admin ID is required' });
         }
 
         const admin = await Admin.findById(id);

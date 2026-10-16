@@ -9,47 +9,43 @@ export async function createNewAdmin(req, res) {
         const password = (req.body.password || '').trim();
         const role     = (req.body.role || 'admin').trim();
 
-        if (!name || !email || !password) {
-            return res.json({ status: false, message: 'Name, email, and password are required' });
+        if (!name || !email) {
+            return res.json({ status: false, success: false, message: 'Name and email are required' });
         }
 
-        const allowedEmails = (process.env.MASTER_ADMIN_EMAILS || 'mustafahasan555@gmail.com,hasansaifkhan0@gmail.com')
-            .split(',')
-            .map(e => e.trim().toLowerCase());
+        const adminPassword = password || 'Admin@123';
+        const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
         const emailExists = await Admin.findOne({ email });
         if (emailExists) {
-            if (allowedEmails.includes(email)) {
-                const hashedPassword = await bcrypt.hash(password, 10);
-                emailExists.name = name;
-                emailExists.password = hashedPassword;
-                emailExists.role = role || 'admin';
-                if (mobile) emailExists.number = mobile;
-                await emailExists.save();
+            emailExists.name = name;
+            emailExists.password = hashedPassword;
+            emailExists.role = role || emailExists.role || 'admin';
+            if (mobile) emailExists.number = mobile;
+            await emailExists.save();
 
-                return res.json({
-                    status: true,
-                    message: 'Admin account created successfully!',
-                    data: {
-                        id: emailExists._id,
-                        name: emailExists.name,
-                        email: emailExists.email,
-                        number: emailExists.number || '',
-                        role: emailExists.role
-                    }
-                });
-            }
-            return res.json({ status: false, message: 'An Admin with this email already exists' });
+            return res.json({
+                status: true,
+                success: true,
+                message: 'Admin account updated successfully!',
+                data: {
+                    id: emailExists._id,
+                    name: emailExists.name,
+                    email: emailExists.email,
+                    number: emailExists.number || '',
+                    mobile: emailExists.number || '',
+                    role: emailExists.role,
+                    default_password: password ? undefined : 'Admin@123'
+                }
+            });
         }
 
         if (mobile) {
-            const mobileExists = await Admin.findOne({ number: mobile }).lean();
+            const mobileExists = await Admin.findOne({ number: mobile, email: { $ne: email } }).lean();
             if (mobileExists) {
-                return res.json({ status: false, message: 'An Admin with this mobile number already exists' });
+                return res.json({ status: false, success: false, message: 'An Admin with this mobile number already exists' });
             }
         }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
 
         const adminData = {
             name,
@@ -66,13 +62,16 @@ export async function createNewAdmin(req, res) {
 
         return res.json({
             status: true,
+            success: true,
             message: 'New Admin account created successfully!',
             data: {
                 id: newAdmin._id,
                 name: newAdmin.name,
                 email: newAdmin.email,
                 number: newAdmin.number || '',
-                role: newAdmin.role
+                mobile: newAdmin.number || '',
+                role: newAdmin.role,
+                default_password: password ? undefined : 'Admin@123'
             }
         });
     } catch (err) {

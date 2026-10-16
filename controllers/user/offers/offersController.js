@@ -2,8 +2,10 @@ import mongoose from 'mongoose';
 import { sendSuccess, sendError } from '../../../utils/responseHandler.js';
 import { Offer } from '../../../models/Offer.js';
 import { CreditCardOffer } from '../../../models/CreditCardOffer.js';
+import { PanVerification } from '../../../models/PanVerification.js';
 import crypto from 'crypto';
 import { sendTemplateMail } from '../../../services/email/mail_helper.js';
+import { sendOtpSms } from '../../../services/sms/smsService.js';
 
 // 9.1 GET /api/offers/index
 export const getOffers = async (req, res) => {
@@ -76,14 +78,65 @@ export const verifyPan = async (req, res) => {
     try {
         const { pan, dob, full_name } = req.body;
         if (!pan || !dob) return sendError(res, 422, 'pan and dob are required.');
-        const masked_phone = (req.user.phone || req.user.number || '').replace(/(\d{2})\d{6}(\d{2})/, '$1******$2');
+
+        const panUpper = String(pan).trim().toUpperCase();
+        const pan_verification_id = `PV-${panUpper}`;
+
+        const rawPhone = req.user.phone || req.user.number || req.body.phone;
+        if (!rawPhone) {
+            return sendError(res, 422, 'User mobile number not found in profile to send OTP.');
+        }
+
+        const cleanPhone = String(rawPhone).replace(/\D/g, '').slice(-10);
+        if (cleanPhone.length !== 10) {
+            return sendError(res, 422, 'Invalid mobile number on user profile.');
+        }
+
+        const masked_phone = cleanPhone.replace(/(\d{2})\d{6}(\d{2})/, '$1******$2');
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+        // Save or update PAN verification record (valid for 10 minutes)
+        await PanVerification.findOneAndUpdate(
+            { pan_verification_id },
+            {
+                pan_verification_id,
+                user_id: req.user._id,
+                pan: panUpper,
+                dob: String(dob).trim(),
+                full_name: full_name || req.user.full_name || req.user.name || '',
+                phone: cleanPhone,
+                otp,
+                is_verified: false,
+                verification_token: null,
+                expires_at: new Date(Date.now() + 10 * 60 * 1000)
+            },
+            { upsert: true, new: true }
+        );
+
+        // Send OTP via SMS (PRP SMS — 2FA_Verification_OTP template)
+        let smsSent = true;
+        try {
+            const smsRes = await sendOtpSms(cleanPhone, otp, 'twoFa');
+            if (!smsRes.success) {
+                console.error(`[PRP SMS] PAN OTP delivery warning for ${cleanPhone}:`, smsRes.message);
+            } else {
+                console.log(`[PRP SMS] PAN OTP successfully sent to ${cleanPhone}`);
+            }
+        } catch (smsErr) {
+            console.error('[PRP SMS] Error sending PAN OTP:', smsErr.message);
+            smsSent = false;
+        }
+
+        // Log OTP in console for dev/testing visibility
+        console.log(`[DEV] PAN Verification OTP for ${cleanPhone} (${pan_verification_id}): ${otp}`);
+
         return sendSuccess(res, 200, 'OTP sent for PAN verification.', {
-            pan_verification_id: `PV-${pan}`,
-            pan,
-            full_name: full_name || req.user.full_name,
+            pan_verification_id,
+            pan: panUpper,
+            full_name: full_name || req.user.full_name || req.user.name,
             masked_phone,
             expires_in_seconds: 600,
-            sms_sent: true,
+            sms_sent: smsSent,
             message: `A 4-digit verification code was sent to ${masked_phone}.`
         });
     } catch (e) { return sendError(res, 500, e.message); }
@@ -94,14 +147,41 @@ export const verifyPanOtp = async (req, res) => {
     try {
         const { pan_verification_id, otp } = req.body;
         if (!pan_verification_id || !otp) return sendError(res, 422, 'pan_verification_id and otp are required.');
+
+        const id = String(pan_verification_id).trim();
+        const inputOtp = String(otp).trim();
+
+        const record = await PanVerification.findOne({ pan_verification_id: id });
+        if (!record) {
+            return sendError(res, 404, 'PAN verification record not found or expired.');
+        }
+
+        if (record.expires_at && new Date() > new Date(record.expires_at)) {
+            return sendError(res, 400, 'OTP expired. Please request a new verification code.');
+        }
+
+        if (record.otp !== inputOtp) {
+            return sendError(res, 400, 'Invalid OTP. Please check and try again.');
+        }
+
         const verification_token = 'PVT_' + crypto.randomBytes(16).toString('hex');
-        const pan = pan_verification_id.replace('PV-', '');
+        record.is_verified = true;
+        record.verification_token = verification_token;
+        await record.save();
+
+        // Also save verified PAN to user profile if not already present
+        if (!req.user.pan) {
+            req.user.pan = record.pan;
+            req.user.pan_number = record.pan;
+            await req.user.save();
+        }
+
         return sendSuccess(res, 200, 'PAN verification successful.', {
-            pan_verification_id,
+            pan_verification_id: record.pan_verification_id,
             verification_token,
             is_verified: true,
-            pan,
-            full_name: req.user.full_name || req.user.name
+            pan: record.pan,
+            full_name: record.full_name || req.user.full_name || req.user.name
         });
     } catch (e) { return sendError(res, 500, e.message); }
 };
