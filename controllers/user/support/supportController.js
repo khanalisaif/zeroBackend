@@ -5,24 +5,39 @@ import { sendSuccess, sendError } from '../../../utils/responseHandler.js';
 import { Faq } from '../../../models/Faq.js';
 import { ContactRequest } from '../../../models/ContactRequest.js';
 import { Feedback } from '../../../models/Feedback.js';
+import { SupportSettings } from '../../../models/SupportSettings.js';
 import { sendTemplateMail } from '../../../services/email/mail_helper.js';
 
-// Support settings (can be stored in DB or config — using env/hardcoded per doc)
-const defaultSupportInfo = {
+// Fallback support info if DB has no settings yet
+const fallbackSupportInfo = {
     phone: '1800-200-8899',
     phone_dial: '18002008899',
     phone_hours: '9 AM - 9 PM',
     email: 'loans@zerocommission.finance',
     title: 'Support & Help',
     subtitle: 'Our dedicated credit advisors are here to help resolve any questions about your loan applications.',
+    chat_enabled: false
 };
 
 // 11.1 GET /api/support/index
 export const getSupportInfo = async (req, res) => {
     try {
-        const faqs = await Faq.find({}).limit(5);
+        // Fetch admin-configured support settings from DB
+        let supportInfo = await SupportSettings.findOne({ singleton_key: 'support_settings' });
+        const info = supportInfo ? {
+            phone: supportInfo.phone,
+            phone_dial: supportInfo.phone_dial,
+            phone_hours: supportInfo.phone_hours,
+            email: supportInfo.email,
+            title: supportInfo.title,
+            subtitle: supportInfo.subtitle,
+            chat_enabled: supportInfo.chat_enabled
+        } : fallbackSupportInfo;
+
+        // Only serve active FAQs to users
+        const faqs = await Faq.find({ status: 'active' }).limit(5).sort({ created_at: -1 });
         return sendSuccess(res, 200, 'Support information retrieved.', {
-            ...defaultSupportInfo,
+            ...info,
             faqs: faqs.map(f => ({
                 id: f._id,
                 question: f.question,
@@ -36,9 +51,9 @@ export const getSupportInfo = async (req, res) => {
 // 11.2 GET /api/support/faqs
 export const getFaqs = async (req, res) => {
     try {
-        const filter = {};
+        const filter = { status: 'active' }; // Users only see active FAQs
         if (req.query.category && req.query.category !== 'all') filter.category = req.query.category;
-        const faqs = await Faq.find(filter);
+        const faqs = await Faq.find(filter).sort({ created_at: -1 });
         return sendSuccess(res, 200, 'FAQs retrieved successfully.', {
             count: faqs.length,
             faqs: faqs.map(f => ({ id: f._id, question: f.question, answer: f.answer, category: f.category || 'general' }))

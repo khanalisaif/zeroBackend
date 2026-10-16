@@ -8,6 +8,7 @@ import { CreditCardOffer } from '../../models/CreditCardOffer.js';
 import { Faq } from '../../models/Faq.js';
 import { User } from '../../models/User.js';
 import { DeletionRequest } from '../../models/DeletionRequest.js';
+import { SupportSettings } from '../../models/SupportSettings.js';
 
 // Auto-seed default catalog data if collections are empty
 async function ensureCatalogData() {
@@ -457,14 +458,20 @@ export const getAdminFaqs = async (req, res) => {
         if (req.query.category && req.query.category !== 'all') {
             query.category = req.query.category;
         }
-        const faqs = await Faq.find(query);
+        if (req.query.status && req.query.status !== 'all') {
+            query.status = req.query.status;
+        }
+        const faqs = await Faq.find(query).sort({ created_at: -1 });
         return sendSuccess(res, 200, 'FAQs retrieved successfully.', {
             total: faqs.length,
             faqs: faqs.map(f => ({
                 id: f._id,
                 question: f.question,
                 answer: f.answer,
-                category: f.category || 'general'
+                category: f.category || 'general',
+                status: f.status || 'active',
+                created_at: f.created_at,
+                updated_at: f.updated_at
             }))
         });
     } catch (err) {
@@ -537,23 +544,58 @@ export const deleteAdminFaq = async (req, res) => {
 
 // ── 12.7 Admin Support Settings ──────────────────────────────────────────────
 
-let supportSettings = {
-    phone: "1800-200-8899",
-    phone_dial: "18002008899",
-    phone_hours: "9 AM - 9 PM",
-    email: "loans@zerocommission.finance",
-    title: "Support & Help",
-    subtitle: "Our dedicated credit advisors are here to help resolve any questions about your loan applications.",
-    chat_enabled: false
-};
+// Helper: get or create the singleton support settings document
+async function getSupportSettingsDoc() {
+    let settings = await SupportSettings.findOne({ singleton_key: 'support_settings' });
+    if (!settings) {
+        settings = await SupportSettings.create({ singleton_key: 'support_settings' });
+    }
+    return settings;
+}
 
 export const getAdminSupport = async (req, res) => {
-    return sendSuccess(res, 200, 'Support settings retrieved successfully.', supportSettings);
+    try {
+        const settings = await getSupportSettingsDoc();
+        return sendSuccess(res, 200, 'Support settings retrieved successfully.', {
+            phone: settings.phone,
+            phone_dial: settings.phone_dial,
+            phone_hours: settings.phone_hours,
+            email: settings.email,
+            title: settings.title,
+            subtitle: settings.subtitle,
+            chat_enabled: settings.chat_enabled,
+            updated_at: settings.updated_at
+        });
+    } catch (err) {
+        return sendError(res, 500, err.message);
+    }
 };
 
 export const updateAdminSupport = async (req, res) => {
-    supportSettings = { ...supportSettings, ...req.body };
-    return sendSuccess(res, 200, 'Support settings updated successfully.', supportSettings);
+    try {
+        const allowedFields = ['phone', 'phone_dial', 'phone_hours', 'email', 'title', 'subtitle', 'chat_enabled'];
+        const updateData = {};
+        for (const key of allowedFields) {
+            if (req.body[key] !== undefined) updateData[key] = req.body[key];
+        }
+        const settings = await SupportSettings.findOneAndUpdate(
+            { singleton_key: 'support_settings' },
+            { $set: updateData },
+            { upsert: true, new: true }
+        );
+        return sendSuccess(res, 200, 'Support settings updated successfully.', {
+            phone: settings.phone,
+            phone_dial: settings.phone_dial,
+            phone_hours: settings.phone_hours,
+            email: settings.email,
+            title: settings.title,
+            subtitle: settings.subtitle,
+            chat_enabled: settings.chat_enabled,
+            updated_at: settings.updated_at
+        });
+    } catch (err) {
+        return sendError(res, 500, err.message);
+    }
 };
 
 // ── 12.8 Admin Account Deletions Audit & Processing ──────────────────────────

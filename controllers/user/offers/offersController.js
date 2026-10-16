@@ -10,10 +10,9 @@ import { sendOtpSms } from '../../../services/sms/smsService.js';
 // 9.1 GET /api/offers/index
 export const getOffers = async (req, res) => {
     try {
-        const filter = {};
+        const filter = { is_active: true };
         if (req.query.category && req.query.category !== 'all') filter.category = req.query.category;
-        filter.is_active = true;
-        const offers = await Offer.find(filter);
+        const offers = await Offer.find(filter).sort({ created_at: -1 });
         return sendSuccess(res, 200, 'Offers retrieved successfully.', {
             total_offers: offers.length,
             offers: offers.map(o => ({
@@ -22,11 +21,18 @@ export const getOffers = async (req, res) => {
                 category: o.category,
                 bank_name: o.bank_name,
                 bank_logo_url: o.bank_logo_url,
+                banner_image_url: o.banner_image_url,
                 badge_text: o.badge_text,
-                interest_rate_formatted: o.interest_rate_formatted,
-                max_amount_formatted: o.max_amount_formatted,
+                interest_rate_value: o.interest_rate_value,
+                interest_rate_formatted: o.interest_rate_formatted || `${o.interest_rate_value}% p.a.`,
+                max_amount_value: o.max_amount_value,
+                max_amount_formatted: o.max_amount_formatted || `\u20b9 ${(o.max_amount_value || 0).toLocaleString('en-IN')}`,
                 tenure_formatted: o.tenure_formatted,
-                is_pre_approved: o.is_pre_approved
+                is_pre_approved: o.is_pre_approved,
+                processing_fee: o.processing_fee,
+                key_features: o.key_features || [],
+                eligibility_criteria: o.eligibility_criteria || [],
+                required_documents: o.required_documents || []
             }))
         });
     } catch (e) { return sendError(res, 500, e.message); }
@@ -38,12 +44,21 @@ export const getOfferDetail = async (req, res) => {
         const offerId = req.query.id;
         if (!offerId || !mongoose.isValidObjectId(offerId)) return sendError(res, 404, 'Offer not found.');
         const offer = await Offer.findById(offerId);
-        if (!offer) return sendError(res, 404, 'Offer not found.');
+        if (!offer || !offer.is_active) return sendError(res, 404, 'Offer not found.');
         return sendSuccess(res, 200, 'Offer details retrieved.', {
             id: offer._id,
             title: offer.title,
+            category: offer.category,
             bank_name: offer.bank_name,
-            interest_rate_formatted: offer.interest_rate_formatted,
+            bank_logo_url: offer.bank_logo_url,
+            banner_image_url: offer.banner_image_url,
+            badge_text: offer.badge_text,
+            interest_rate_value: offer.interest_rate_value,
+            interest_rate_formatted: offer.interest_rate_formatted || `${offer.interest_rate_value}% p.a.`,
+            max_amount_value: offer.max_amount_value,
+            max_amount_formatted: offer.max_amount_formatted || `\u20b9 ${(offer.max_amount_value || 0).toLocaleString('en-IN')}`,
+            tenure_formatted: offer.tenure_formatted,
+            is_pre_approved: offer.is_pre_approved,
             processing_fee: offer.processing_fee,
             key_features: offer.key_features || [],
             eligibility_criteria: offer.eligibility_criteria || [],
@@ -55,7 +70,7 @@ export const getOfferDetail = async (req, res) => {
 // 9.3 GET /api/credit-cards/offers
 export const getCardOffers = async (req, res) => {
     try {
-        const cards = await CreditCardOffer.find({ is_active: true });
+        const cards = await CreditCardOffer.find({ is_active: true }).sort({ created_at: -1 });
         return sendSuccess(res, 200, 'Credit card offers retrieved successfully.', {
             total_cards: cards.length,
             cards: cards.map(c => ({

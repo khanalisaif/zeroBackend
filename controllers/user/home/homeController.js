@@ -70,53 +70,41 @@ export const getDashboard = async (req, res) => {
             rejected: applications.filter(a => (a.status || '').toLowerCase() === 'rejected').length
         };
 
-        // 4. Fetch Offers
-        let rawOffers = await Offer.find({ is_active: true }).limit(2);
-        let recommended_offers = rawOffers.map(o => ({
+        // 4. Fetch Offers — return same fields as admin GET /api/admin/offers
+        const rawOffers = await Offer.find({ is_active: true }).sort({ created_at: -1 }).limit(3);
+        const recommended_offers = rawOffers.map(o => ({
             id: o._id,
             title: o.title,
+            category: o.category,
             bank_name: o.bank_name,
-            interest_rate_formatted: o.interest_rate_formatted || `${o.interest_rate_value}% p.a.`,
-            max_amount_formatted: o.max_amount_formatted || `₹ ${(o.max_amount_value || 0).toLocaleString('en-IN')}`,
+            bank_logo_url: o.bank_logo_url,
+            banner_image_url: o.banner_image_url,
             badge_text: o.badge_text || 'Zero Commission Exclusive',
-            is_pre_approved: o.is_pre_approved !== false
+            interest_rate_value: o.interest_rate_value,
+            interest_rate_formatted: o.interest_rate_formatted || `${o.interest_rate_value}% p.a.`,
+            max_amount_value: o.max_amount_value,
+            max_amount_formatted: o.max_amount_formatted || `\u20b9 ${(o.max_amount_value || 0).toLocaleString('en-IN')}`,
+            tenure_formatted: o.tenure_formatted,
+            is_pre_approved: o.is_pre_approved !== false,
+            processing_fee: o.processing_fee,
+            key_features: o.key_features || [],
+            eligibility_criteria: o.eligibility_criteria || [],
+            required_documents: o.required_documents || []
         }));
 
-        if (recommended_offers.length === 0) {
-            recommended_offers = [
-                {
-                    id: "OFFER-HL-01",
-                    title: "HDFC Home Loan - Zero Processing",
-                    bank_name: "HDFC Bank",
-                    interest_rate_formatted: "8.40% p.a.",
-                    max_amount_formatted: "₹ 75,00,000",
-                    badge_text: "Zero Commission Exclusive",
-                    is_pre_approved: true
-                }
-            ];
-        }
-
-        // 5. Fetch Credit Card Offers
-        let rawCards = await CreditCardOffer.find({ is_active: true }).limit(2);
-        let credit_card_offers = rawCards.map(c => ({
+        // 5. Fetch Credit Card Offers — return same fields as admin GET /api/admin/cards
+        const rawCards = await CreditCardOffer.find({ is_active: true }).sort({ created_at: -1 }).limit(3);
+        const credit_card_offers = rawCards.map(c => ({
             id: c._id,
             card_name: c.card_name,
             bank_name: c.bank_name,
-            cashback_rate: c.cashback_rate || '5% Cashback',
-            joining_fee: c.joining_fee || '₹ 1,000'
+            card_type: c.card_type,
+            annual_fee: c.annual_fee,
+            joining_fee: c.joining_fee,
+            cashback_rate: c.cashback_rate,
+            credit_limit_estimate: c.credit_limit_estimate,
+            key_benefits: c.key_benefits || []
         }));
-
-        if (credit_card_offers.length === 0) {
-            credit_card_offers = [
-                {
-                    id: "CARD-01",
-                    card_name: "HDFC Millennia Credit Card",
-                    bank_name: "HDFC Bank",
-                    cashback_rate: "5% Cashback",
-                    joining_fee: "₹ 1,000"
-                }
-            ];
-        }
 
         // 6. Fetch Unread Notifications
         const unread_notifications_count = await Notification.countDocuments({ user_id, is_unread: true });
